@@ -9,6 +9,7 @@ from typing import Any
 from apple_calendar_mcp.config import (
     get_index_future_years,
     get_index_max_occurrences_per_series,
+    get_index_past_years,
     get_index_path,
 )
 from apple_calendar_mcp.executor import execute_with_core
@@ -26,6 +27,8 @@ class IndexStats:
     unsupported_recurrence_count: int
     failed_jobs_count: int
     db_size_mb: float
+    coverage_start: str | None = None
+    coverage_end: str | None = None
     last_sync: datetime | None = None
 
 
@@ -58,10 +61,20 @@ class IndexManager:
 
     def fetch_snapshot(self) -> dict[str, Any]:
         future_years = get_index_future_years()
+        past_years = get_index_past_years()
+        if past_years is None:
+            start_expr = "new Date(1970, 0, 1)"
+        else:
+            start_expr = (
+                "new Date("
+                f"now.getFullYear() - {past_years}, "
+                "now.getMonth(), now.getDate()"
+                ")"
+            )
         script = f"""
 const calendars = CalendarCore.listCalendars();
 const now = new Date();
-const start = new Date(1970, 0, 1).toISOString();
+const start = {start_expr}.toISOString();
 const end = new Date(
   now.getFullYear() + {future_years}, now.getMonth(), now.getDate()
 ).toISOString();
@@ -73,7 +86,15 @@ JSON.stringify({{calendars: calendars, events: events}});
     def build_from_jxa(self, progress_callback=None) -> int:
         snapshot = self.fetch_snapshot()
         now = datetime.now(UTC)
-        coverage_start = "1970-01-01T00:00:00Z"
+        past_years = get_index_past_years()
+        if past_years is None:
+            coverage_start = "1970-01-01T00:00:00Z"
+        else:
+            coverage_start = (
+                (now - timedelta(days=365 * past_years))
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
         coverage_end = (
             (now + timedelta(days=365 * get_index_future_years()))
             .isoformat()
@@ -205,6 +226,14 @@ JSON.stringify({{calendars: calendars, events: events}});
 
     def get_stats(self) -> IndexStats:
         conn = self._connection()
+        coverage = conn.execute(
+            """
+            SELECT
+                MIN(occurrence_start) AS coverage_start,
+                MAX(occurrence_end) AS coverage_end
+            FROM occurrences
+            """
+        ).fetchone()
         db_size_mb = (
             self.db_path.stat().st_size / 1024 / 1024
             if self.db_path.exists()
@@ -227,4 +256,6 @@ JSON.stringify({{calendars: calendars, events: events}});
                 "SELECT COUNT(*) FROM failed_index_jobs"
             ).fetchone()[0],
             db_size_mb=db_size_mb,
+            coverage_start=coverage["coverage_start"],
+            coverage_end=coverage["coverage_end"],
         )

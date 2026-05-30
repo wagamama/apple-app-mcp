@@ -69,3 +69,26 @@ def test_manager_search_returns_results(tmp_path):
         manager.build_from_jxa()
 
     assert manager.search("budget")[0]["event_id"] == "event-1"
+    stats = manager.get_stats()
+    assert stats.coverage_start == "2026-05-01T10:00:00Z"
+    assert stats.coverage_end == "2026-05-01T11:00:00Z"
+
+
+def test_fetch_snapshot_uses_configured_year_windows(tmp_path):
+    db_path = tmp_path / "calendar.db"
+    manager = IndexManager(db_path=db_path)
+
+    with (
+        patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
+        patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
+        patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
+    ):
+        past.return_value = 3
+        fut.return_value = 2
+        execute.return_value = {"calendars": [], "events": []}
+
+        assert manager.fetch_snapshot() == {"calendars": [], "events": []}
+
+    script = execute.call_args.args[0]
+    assert "now.getFullYear() - 3" in script
+    assert "now.getFullYear() + 2" in script

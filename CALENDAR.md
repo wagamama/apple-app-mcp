@@ -24,7 +24,7 @@ packages/apple-calendar-mcp/src/apple_calendar_mcp/
 ├── server.py           # FastMCP server with 6 read-only MCP tools
 ├── config.py           # Environment variable and TOML configuration
 ├── builders.py         # Calendar query and script builders
-├── executor.py         # run_jxa(), execute_with_core(), execute_query()
+├── executor.py         # run_jxa(), execute_with_core()
 ├── recurrence.py       # Built-in recurrence expansion for common RRULEs
 ├── index/              # FTS5 search index module
 │   ├── __init__.py     # Exports IndexManager
@@ -108,7 +108,7 @@ patterns and explicitly mark unsupported complex rules.
 ### Data Flow (JXA Path)
 
 ```
-MCP Tool → CalendarQueryBuilder.build() → executor.execute_query()
+MCP Tool → CalendarQueryBuilder method → executor.execute_with_core()
                                                  ↓
                                       CALENDAR_CORE_JS + script body
                                                  ↓
