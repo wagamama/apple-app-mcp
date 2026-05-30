@@ -1,0 +1,21 @@
+from __future__ import annotations
+
+import importlib.metadata
+
+
+def test_calendar_package_imports():
+    import apple_calendar_mcp
+
+    assert apple_calendar_mcp.__all__ == ["main"]
+    assert callable(apple_calendar_mcp.main)
+
+
+def test_calendar_distribution_exposes_console_script():
+    dist = importlib.metadata.distribution("apple-calendar-mcp")
+    scripts = {
+        entry.name: entry.value
+        for entry in dist.entry_points
+        if entry.group == "console_scripts"
+    }
+
+    assert scripts["apple-calendar-mcp"] == "apple_calendar_mcp:main"

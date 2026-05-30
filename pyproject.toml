@@ -73,6 +73,9 @@ artifacts = ["src/**/*.js", "src/**/py.typed"]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.uv.workspace]
+members = ["packages/apple-calendar-mcp"]
+
 [dependency-groups]
 dev = [
     "ruff>=0.14.8",
@@ -89,15 +92,15 @@ docs = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["src"]
+testpaths = ["tests", "packages/apple-calendar-mcp/tests"]
+pythonpath = ["src", "packages/apple-calendar-mcp/src"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 target-version = "py311"
 line-length = 80
-src = ["src"]
+src = ["src", "packages/apple-calendar-mcp/src"]
 
 [tool.ruff.lint]
 select = [
@@ -116,4 +119,3 @@ ignore = [
 
 [tool.ruff.format]
 docstring-code-format = true
-
