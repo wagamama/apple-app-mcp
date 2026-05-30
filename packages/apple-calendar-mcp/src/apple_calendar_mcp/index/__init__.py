@@ -1,3 +1,5 @@
 """Calendar index package."""
 
-__all__: list[str] = []
+from .manager import IndexManager
+
+__all__ = ["IndexManager"]
