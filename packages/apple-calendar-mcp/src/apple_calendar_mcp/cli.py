@@ -91,7 +91,9 @@ def rebuild(verbose: bool = False) -> None:
 def search(query: str, limit: int = 20, offset: int = 0) -> None:
     manager = IndexManager()
     if not manager.has_index():
-        print("No index found. Run 'apple-calendar-mcp index'.", file=sys.stderr)
+        print(
+            "No index found. Run 'apple-calendar-mcp index'.", file=sys.stderr
+        )
         sys.exit(1)
     _print_json(manager.search(query, limit=limit, offset=offset))
 
@@ -99,7 +101,9 @@ def search(query: str, limit: int = 20, offset: int = 0) -> None:
 @app.command
 def events(start: str, end: str, limit: int = 50, offset: int = 0) -> None:
     manager = IndexManager()
-    _print_json(manager.events(start=start, end=end, limit=limit, offset=offset))
+    _print_json(
+        manager.events(start=start, end=end, limit=limit, offset=offset)
+    )
 
 
 @app.command

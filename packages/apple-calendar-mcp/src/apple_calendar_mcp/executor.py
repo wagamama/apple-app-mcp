@@ -69,9 +69,7 @@ async def run_jxa_async(script: str, timeout: int = 120) -> str:
     return stdout.decode("utf-8", errors="replace").strip()
 
 
-async def execute_with_core_async(
-    script_body: str, timeout: int = 120
-) -> Any:
+async def execute_with_core_async(script_body: str, timeout: int = 120) -> Any:
     """Execute a CalendarCore JXA snippet asynchronously."""
     output = await run_jxa_async(
         f"{CALENDAR_CORE_JS}\n\n{script_body}", timeout

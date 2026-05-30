@@ -2,7 +2,7 @@
 name = "apple-calendar-mcp"
 version = "0.1.0"
 description = "Read-only Apple Calendar MCP server with indexed archive search."
-readme = "../../CALENDAR.md"
+readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.11"
 authors = [

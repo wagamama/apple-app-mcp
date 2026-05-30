@@ -50,9 +50,7 @@ def _load_config_file() -> dict:
         with CONFIG_FILE_PATH.open("rb") as f:
             data = tomllib.load(f)
     except tomllib.TOMLDecodeError as e:
-        raise ConfigError(
-            f"{CONFIG_FILE_PATH}: TOML syntax error: {e}"
-        ) from e
+        raise ConfigError(f"{CONFIG_FILE_PATH}: TOML syntax error: {e}") from e
     _validate(data)
     _cached_config = data
     return data
@@ -99,8 +97,7 @@ def _validate(data: dict) -> None:
             if not isinstance(value, expected):
                 names = " | ".join(t.__name__ for t in expected)
                 raise ConfigError(
-                    f"{CONFIG_FILE_PATH}: `[{section}] {key}` "
-                    f"expected {names}."
+                    f"{CONFIG_FILE_PATH}: `[{section}] {key}` expected {names}."
                 )
             if isinstance(value, list):
                 for i, item in enumerate(value):

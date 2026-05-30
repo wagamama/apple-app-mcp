@@ -50,9 +50,7 @@ def expand_occurrences(
 
     if not recurrence:
         if _overlaps(start, end, window_start, window_end):
-            return ExpansionResult(
-                [_occurrence(event["event_id"], start, end)]
-            )
+            return ExpansionResult([_occurrence(event["event_id"], start, end)])
         return ExpansionResult([])
 
     parsed = _parse_recurrence(recurrence)
@@ -69,7 +67,9 @@ def expand_occurrences(
 
     occurrences: list[Occurrence] = []
     generated = 0
-    for occurrence_start in _iter_candidate_starts(start, freq, interval, parsed):
+    for occurrence_start in _iter_candidate_starts(
+        start, freq, interval, parsed
+    ):
         if count is not None and generated >= count:
             break
         generated += 1
@@ -78,7 +78,9 @@ def expand_occurrences(
         occurrence_end = occurrence_start + duration
         if occurrence_start in excluded:
             continue
-        if _overlaps(occurrence_start, occurrence_end, window_start, window_end):
+        if _overlaps(
+            occurrence_start, occurrence_end, window_start, window_end
+        ):
             occurrences.append(
                 _occurrence(event["event_id"], occurrence_start, occurrence_end)
             )
@@ -96,11 +98,15 @@ def _parse_recurrence(value: str) -> dict[str, str] | ExpansionResult:
         if not raw_part:
             continue
         if "=" not in raw_part:
-            return ExpansionResult([], True, f"Invalid recurrence part {raw_part}")
+            return ExpansionResult(
+                [], True, f"Invalid recurrence part {raw_part}"
+            )
         key, raw = raw_part.split("=", 1)
         key = key.upper()
         if key not in SUPPORTED_KEYS:
-            return ExpansionResult([], True, f"Unsupported recurrence key {key}")
+            return ExpansionResult(
+                [], True, f"Unsupported recurrence key {key}"
+            )
         parts[key] = raw
 
     freq = parts.get("FREQ", "").upper()

@@ -32,9 +32,9 @@ import tempfile
 import time
 from pathlib import Path as _Path
 from typing import Literal
-from typing_extensions import TypedDict
 
 from fastmcp import FastMCP
+from typing_extensions import TypedDict
 
 from .builders import AccountsQueryBuilder, QueryBuilder
 from .config import (

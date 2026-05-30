@@ -30,14 +30,14 @@ class IndexStats:
 
 
 class IndexManager:
-    _instance: "IndexManager | None" = None
+    _instance: IndexManager | None = None
 
     def __init__(self, db_path: Path | None = None):
         self.db_path = db_path or get_index_path()
         self._conn: Connection | None = None
 
     @classmethod
-    def get_instance(cls) -> "IndexManager":
+    def get_instance(cls) -> IndexManager:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
@@ -57,16 +57,17 @@ class IndexManager:
         return self.db_path.exists()
 
     def fetch_snapshot(self) -> dict[str, Any]:
-        script = """
+        future_years = get_index_future_years()
+        script = f"""
 const calendars = CalendarCore.listCalendars();
 const now = new Date();
 const start = new Date(1970, 0, 1).toISOString();
 const end = new Date(
-  now.getFullYear() + %d, now.getMonth(), now.getDate()
+  now.getFullYear() + {future_years}, now.getMonth(), now.getDate()
 ).toISOString();
 const events = CalendarCore.eventsInRange(start, end, []);
-JSON.stringify({calendars: calendars, events: events});
-""" % get_index_future_years()
+JSON.stringify({{calendars: calendars, events: events}});
+"""
         return execute_with_core(script)
 
     def build_from_jxa(self, progress_callback=None) -> int:
@@ -74,16 +75,16 @@ JSON.stringify({calendars: calendars, events: events});
         now = datetime.now(UTC)
         coverage_start = "1970-01-01T00:00:00Z"
         coverage_end = (
-            now + timedelta(days=365 * get_index_future_years())
-        ).isoformat().replace("+00:00", "Z")
+            (now + timedelta(days=365 * get_index_future_years()))
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
         result = sync_from_snapshot(
             self._connection(),
             snapshot,
             coverage_start=coverage_start,
             coverage_end=coverage_end,
-            max_occurrences_per_series=(
-                get_index_max_occurrences_per_series()
-            ),
+            max_occurrences_per_series=(get_index_max_occurrences_per_series()),
         )
         if progress_callback is not None:
             progress_callback(result.added, result.errors)
@@ -130,9 +131,7 @@ JSON.stringify({calendars: calendars, events: events});
             params.extend(calendar_ids)
         sql += " ORDER BY o.occurrence_start LIMIT ? OFFSET ?"
         params.extend([limit, offset])
-        return [
-            dict(row) for row in self._connection().execute(sql, params)
-        ]
+        return [dict(row) for row in self._connection().execute(sql, params)]
 
     def get_event(
         self,
@@ -160,15 +159,19 @@ JSON.stringify({calendars: calendars, events: events});
         if row is None:
             raise ValueError(f"Calendar event {event_id} not found.")
         result = dict(row)
-        attendee_rows = self._connection().execute(
-            """
+        attendee_rows = (
+            self._connection()
+            .execute(
+                """
             SELECT display_name, email, participation_status
             FROM attendees
             WHERE event_id = ?
             ORDER BY display_name, email
             """,
-            (event_id,),
-        ).fetchall()
+                (event_id,),
+            )
+            .fetchall()
+        )
         result["attendees"] = [dict(attendee) for attendee in attendee_rows]
         return result
 
@@ -211,9 +214,9 @@ JSON.stringify({calendars: calendars, events: events});
             calendar_count=conn.execute(
                 "SELECT COUNT(*) FROM calendars"
             ).fetchone()[0],
-            event_count=conn.execute(
-                "SELECT COUNT(*) FROM events"
-            ).fetchone()[0],
+            event_count=conn.execute("SELECT COUNT(*) FROM events").fetchone()[
+                0
+            ],
             occurrence_count=conn.execute(
                 "SELECT COUNT(*) FROM occurrences"
             ).fetchone()[0],

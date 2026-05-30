@@ -51,9 +51,10 @@ def test_sync_from_snapshot_inserts_event_occurrence_attendee(calendar_db):
 
     assert result.added == 1
     assert calendar_db.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 1
-    assert calendar_db.execute(
-        "SELECT COUNT(*) FROM occurrences"
-    ).fetchone()[0] == 1
-    assert calendar_db.execute(
-        "SELECT COUNT(*) FROM attendees"
-    ).fetchone()[0] == 1
+    assert (
+        calendar_db.execute("SELECT COUNT(*) FROM occurrences").fetchone()[0]
+        == 1
+    )
+    assert (
+        calendar_db.execute("SELECT COUNT(*) FROM attendees").fetchone()[0] == 1
+    )

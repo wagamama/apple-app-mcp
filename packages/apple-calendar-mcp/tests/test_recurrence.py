@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from apple_calendar_mcp.recurrence import expand_occurrences
 
-
 BASE_EVENT = {
     "event_id": "e1",
     "start_date": "2026-01-05T10:00:00Z",
@@ -20,9 +19,7 @@ def test_non_recurring_event_returns_single_occurrence():
     )
 
     assert result.unsupported is False
-    assert [o.start for o in result.occurrences] == [
-        "2026-01-05T10:00:00Z"
-    ]
+    assert [o.start for o in result.occurrences] == ["2026-01-05T10:00:00Z"]
 
 
 def test_daily_count():
