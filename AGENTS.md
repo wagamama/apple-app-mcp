@@ -61,22 +61,24 @@ uv run --package apple-calendar-mcp pytest packages/apple-calendar-mcp/tests
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
 | `lint.yml` | Push/PR to `main` | `ruff check` + `ruff format --check` on package sources |
-| `release.yml` | Tag push (`v*`) | Build Apple Mail package -> PyPI publish -> GitHub Release |
+| `release.yml` | Tag push (`v*`) | Build Mail and Calendar packages -> PyPI publish -> GitHub Release |
 
 ### Releasing
 
-A single tag push triggers the full pipeline: build, PyPI publish, and GitHub
-Release.
+A single tag push triggers the full pipeline: build `mac-mail-mcp` and
+`mac-calendar-mcp`, publish both to PyPI, publish both MCP registry manifests,
+and create a GitHub Release.
 
 Pre-release checklist:
 
-1. `pyproject.toml` -> `version = "0.X.Y"`
-2. `server.json` -> `"version"` and `packages[0].version`
+1. Package `pyproject.toml` files -> `version = "0.X.Y"`
+2. `server.mail.json` and `server.calendar.json` -> `"version"` and
+   `packages[0].version`
 3. Run lint, format, and tests.
 4. Commit, tag, and push:
 
 ```bash
-git add pyproject.toml server.json
+git add packages/*/pyproject.toml server.mail.json server.calendar.json
 git commit -m "Bump version to 0.X.Y"
 git tag v0.X.Y
 git push origin main v0.X.Y

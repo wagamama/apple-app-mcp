@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.imdinu/apple-mail-mcp",
+  "name": "io.github.wagamama/mac-mail-mcp",
   "title": "Apple Mail MCP",
   "description": "Apple Mail MCP server with full-coverage FTS5 body search. Reliable on large mailboxes where AppleScript-based servers timeout.",
   "repository": {
-    "url": "https://github.com/imdinu/apple-mail-mcp",
+    "url": "https://github.com/wagamama/apple-app-mcp",
     "source": "github"
   },
   "version": "0.4.0",
   "packages": [
     {
       "registryType": "pypi",
-      "identifier": "apple-mail-mcp",
+      "identifier": "mac-mail-mcp",
       "version": "0.4.0",
       "runtimeHint": "uvx",
       "transport": {
