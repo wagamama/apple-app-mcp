@@ -10,7 +10,7 @@ The only Apple Mail MCP server with full-coverage FTS5 body search. Reliable on 
 ## Project Structure
 
 ```
-src/apple_mail_mcp/
+packages/apple-mail-mcp/src/apple_mail_mcp/
 ├── __init__.py         # CLI entry point, exports main()
 ├── cli.py              # CLI commands (index, status, rebuild, serve)
 ├── server.py           # FastMCP server with 8 MCP tools

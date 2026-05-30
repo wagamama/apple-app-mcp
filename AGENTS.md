@@ -33,8 +33,8 @@ domain file.
 - Python 3.11+.
 - Use type hints for new and changed Python code.
 - Keep lines at 80 characters where practical.
-- Format with `uv run ruff format src/`.
-- Lint with `uv run ruff check src/`.
+- Format package sources with `uv run ruff format packages/apple-mail-mcp/src packages/apple-calendar-mcp/src`.
+- Lint package sources with `uv run ruff check packages/apple-mail-mcp/src packages/apple-calendar-mcp/src`.
 - Prefer existing module boundaries and helper APIs over new abstractions.
 
 ## Testing
@@ -42,7 +42,8 @@ domain file.
 ```bash
 uv run pytest
 uv run pytest -v
-uv run pytest tests/test_search.py
+uv run --package apple-mail-mcp pytest packages/apple-mail-mcp/tests/test_search.py
+uv run --package apple-calendar-mcp pytest packages/apple-calendar-mcp/tests
 ```
 
 ## Git Workflow and CI/CD
@@ -59,8 +60,8 @@ uv run pytest tests/test_search.py
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| `lint.yml` | Push/PR to `main` | `ruff check src/` + `ruff format --check src/` |
-| `release.yml` | Tag push (`v*`) | `uv build` -> PyPI publish -> GitHub Release |
+| `lint.yml` | Push/PR to `main` | `ruff check` + `ruff format --check` on package sources |
+| `release.yml` | Tag push (`v*`) | Build Apple Mail package -> PyPI publish -> GitHub Release |
 
 ### Releasing
 
@@ -88,8 +89,8 @@ settings and the GitHub `pypi` environment.
 ### Pre-Push Checklist
 
 ```bash
-uv run ruff check src/
-uv run ruff format --check src/
+uv run ruff check packages/apple-mail-mcp/src packages/apple-calendar-mcp/src
+uv run ruff format --check packages/apple-mail-mcp/src packages/apple-calendar-mcp/src
 uv run pytest
 ```
 

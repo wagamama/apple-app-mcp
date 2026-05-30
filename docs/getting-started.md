@@ -96,7 +96,7 @@ apple-mail-mcp emails --filter unread --limit 10
 Generate a Claude Code skill for CLI-based access:
 
 ```bash
-apple-mail-mcp integrate claude > ~/.claude/skills/apple-mail.md
+apple-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
 ```
 
 See [Configuration](configuration.md#cli-commands) for the full command list.

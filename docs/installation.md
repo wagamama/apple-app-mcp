@@ -25,15 +25,15 @@ pip install apple-mail-mcp
 For development or to run the latest unreleased version:
 
 ```bash
-git clone https://github.com/imdinu/apple-mail-mcp
-cd apple-mail-mcp
+git clone https://github.com/wagamama/apple-app-mcp
+cd apple-app-mcp
 uv sync
 ```
 
 Run with:
 
 ```bash
-uv run apple-mail-mcp
+uv run --package apple-mail-mcp apple-mail-mcp
 ```
 
 ## Prerelease Versions
