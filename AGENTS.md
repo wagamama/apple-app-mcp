@@ -13,8 +13,8 @@ domain file.
 
 - Read `MAIL.md` before changing Apple Mail MCP behavior, tests, docs, CLI,
   indexing, JXA, benchmarks, or packaging.
-- A future `CALENDAR.md` should contain Apple Calendar MCP architecture,
-  tools, tests, and platform caveats. Add it when Calendar development starts.
+- Read `CALENDAR.md` before changing Apple Calendar MCP behavior, tests, docs,
+  CLI, indexing, JXA, benchmarks, or packaging.
 - Keep domain-specific details out of this file unless they apply across all
   Apple app MCP servers in the repository.
 
