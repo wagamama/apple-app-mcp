@@ -6,8 +6,8 @@ MCP server.
 
 ## Project Overview
 
-Apple Calendar MCP is planned as a read-only, JXA-only MCP server focused on
-archive search across Apple Calendar events. It should provide a small
+Apple Calendar MCP is a read-only, JXA-only MCP server focused on
+archive search across Apple Calendar events. It provides a small
 assistant-friendly read surface, backed by a local SQLite + FTS5 index for
 search across all accessible calendar history. The implementation should stay
 separate from Apple Mail MCP as its own package and CLI while following the same
@@ -15,10 +15,10 @@ repo workflow and server patterns.
 
 ## Project Structure
 
-Planned package layout:
+Package layout:
 
 ```
-src/apple_calendar_mcp/
+packages/apple-calendar-mcp/src/apple_calendar_mcp/
 ├── __init__.py         # CLI entry point, exports main()
 ├── cli.py              # CLI commands (index, status, rebuild, serve)
 ├── server.py           # FastMCP server with 6 read-only MCP tools
@@ -168,7 +168,7 @@ fully expanded.
 
 ## FTS5 Search Index
 
-### Database Schema (planned)
+### Database Schema
 
 ```sql
 -- Calendar metadata cache
@@ -296,7 +296,7 @@ occurrences = expand_occurrences(
     event,
     coverage_start,
     coverage_end,
-    future_years=1,
+    max_occurrences=10000,
 )
 ```
 
@@ -307,13 +307,18 @@ clear about unsupported recurrence rules.
 
 ```python
 from apple_calendar_mcp.index.sync import (
-    fetch_calendar_snapshot,
     sync_from_snapshot,
     SyncResult,
 )
 
-snapshot = fetch_calendar_snapshot()
-result = sync_from_snapshot(conn, snapshot, progress_callback)
+snapshot = manager.fetch_snapshot()
+result = sync_from_snapshot(
+    conn,
+    snapshot,
+    coverage_start="1970-01-01T00:00:00Z",
+    coverage_end="2027-01-01T00:00:00Z",
+    max_occurrences_per_series=10000,
+)
 # result.added, result.updated, result.deleted, result.errors
 ```
 
@@ -355,7 +360,6 @@ CalendarCore.formatDate(date)  // ISO string or null
 ```bash
 apple-calendar-mcp              # Run MCP server (default)
 apple-calendar-mcp serve        # Run MCP server explicitly
-apple-calendar-mcp init         # Write a commented config.toml template
 apple-calendar-mcp index        # Build search index from Calendar.app
 apple-calendar-mcp status       # Show index statistics
 apple-calendar-mcp rebuild      # Force rebuild index
@@ -368,17 +372,11 @@ apple-calendar-mcp agenda       # Show agenda (JSON output)
 ## Calendar Smoke Checks
 
 ```bash
-# Import test
-uv run python -c "from apple_calendar_mcp import mcp; print('OK')"
-
-# Test index
-uv run python -c "
-from apple_calendar_mcp.index import IndexManager
-m = IndexManager.get_instance()
-if m.has_index():
-    stats = m.get_stats()
-    print(f'Occurrences: {stats.occurrence_count}')
-"
+uv run --package apple-calendar-mcp --group dev pytest \
+  packages/apple-calendar-mcp/tests
+uv run --package apple-calendar-mcp --group dev apple-calendar-mcp --help
+uv run --package apple-calendar-mcp --group dev python -c \
+  "from apple_calendar_mcp import main; print(callable(main))"
 ```
 
 ## Critical: JXA Performance
