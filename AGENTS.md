@@ -4,16 +4,16 @@ Start here for shared repository instructions. This file is derived from the
 former project instructions, but it is the agent-facing entry point going
 forward.
 
-This repository currently contains the Apple Mail MCP server and is expected to
-host additional Apple app MCP servers, such as Apple Calendar MCP, over time.
+This repository currently contains the Mac Mail MCP server and is expected to
+host additional Apple app MCP servers, such as Mac Calendar MCP, over time.
 Keep shared workflow here and put app-specific architecture in the matching
 domain file.
 
 ## Project Areas
 
-- Read `MAIL.md` before changing Apple Mail MCP behavior, tests, docs, CLI,
+- Read `MAIL.md` before changing Mac Mail MCP behavior, tests, docs, CLI,
   indexing, JXA, benchmarks, or packaging.
-- Read `CALENDAR.md` before changing Apple Calendar MCP behavior, tests, docs,
+- Read `CALENDAR.md` before changing Mac Calendar MCP behavior, tests, docs,
   CLI, indexing, JXA, benchmarks, or packaging.
 - Keep domain-specific details out of this file unless they apply across all
   Apple app MCP servers in the repository.
@@ -33,8 +33,8 @@ domain file.
 - Python 3.11+.
 - Use type hints for new and changed Python code.
 - Keep lines at 80 characters where practical.
-- Format package sources with `uv run ruff format packages/apple-mail-mcp/src packages/apple-calendar-mcp/src`.
-- Lint package sources with `uv run ruff check packages/apple-mail-mcp/src packages/apple-calendar-mcp/src`.
+- Format package sources with `uv run ruff format packages/mac-mail-mcp/src packages/mac-calendar-mcp/src`.
+- Lint package sources with `uv run ruff check packages/mac-mail-mcp/src packages/mac-calendar-mcp/src`.
 - Prefer existing module boundaries and helper APIs over new abstractions.
 
 ## Testing
@@ -42,8 +42,8 @@ domain file.
 ```bash
 uv run pytest
 uv run pytest -v
-uv run --package mac-mail-mcp pytest packages/apple-mail-mcp/tests/test_search.py
-uv run --package mac-calendar-mcp pytest packages/apple-calendar-mcp/tests
+uv run --package mac-mail-mcp pytest packages/mac-mail-mcp/tests/test_search.py
+uv run --package mac-calendar-mcp pytest packages/mac-calendar-mcp/tests
 ```
 
 ## Git Workflow and CI/CD
@@ -91,8 +91,8 @@ settings and the GitHub `pypi` environment.
 ### Pre-Push Checklist
 
 ```bash
-uv run ruff check packages/apple-mail-mcp/src packages/apple-calendar-mcp/src
-uv run ruff format --check packages/apple-mail-mcp/src packages/apple-calendar-mcp/src
+uv run ruff check packages/mac-mail-mcp/src packages/mac-calendar-mcp/src
+uv run ruff format --check packages/mac-mail-mcp/src packages/mac-calendar-mcp/src
 uv run pytest
 ```
 

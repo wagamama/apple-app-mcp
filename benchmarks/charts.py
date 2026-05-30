@@ -184,7 +184,7 @@ def generate_chart(
 
 # Friendly display names for the overview chart
 COMPETITOR_LABELS = {
-    "imdinu": "apple-mail-mcp (ours)",
+    "imdinu": "mac-mail-mcp (ours)",
     "bastianzim": "BastianZim",
     "rusty": "rusty (Rust)",
     "pl-lyfx": "pl-lyfx",

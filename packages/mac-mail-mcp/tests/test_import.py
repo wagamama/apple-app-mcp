@@ -19,5 +19,5 @@ def test_mail_distribution_exposes_console_scripts():
     }
 
     assert dist.metadata["Name"] == "mac-mail-mcp"
+    assert set(scripts) == {"mac-mail-mcp"}
     assert scripts["mac-mail-mcp"] == "apple_mail_mcp:main"
-    assert scripts["apple-mail-mcp"] == "apple_mail_mcp:main"

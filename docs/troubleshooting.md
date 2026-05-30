@@ -35,7 +35,7 @@ Common issues and their solutions.
 
 3. **Index is stale.** Check with `mac-mail-mcp status`. If the index is old, run `mac-mail-mcp rebuild` or start the server with `--watch` for real-time updates.
 
-4. **Mailbox excluded.** By default, `Drafts` is excluded from indexing. Check `APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES` (env) or `[index] exclude_mailboxes` in `~/.apple-mail-mcp/config.toml`.
+4. **Mailbox excluded.** By default, `Drafts` is excluded from indexing. Check `APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES` (env) or `[index] exclude_mailboxes` in `~/.mac-mail-mcp/config.toml`.
 
 ## Startup Timeout (v0.1.5 and earlier)
 
@@ -69,7 +69,7 @@ This drops and recreates the index from scratch.
 `config.toml: TOML syntax error: ...`, `unknown key`,
 `expected str`, or `unsupported config_version`.
 
-**Cause:** `~/.apple-mail-mcp/config.toml` exists but doesn't validate
+**Cause:** `~/.mac-mail-mcp/config.toml` exists but doesn't validate
 against the schema. The loader fails loud on syntax errors, unknown
 keys (typos like `mailboxes` vs `mailbox`), type mismatches, and
 unsupported `config_version` values — refusing to start beats
@@ -104,7 +104,7 @@ silently using degraded config.
 - **Wait for self-healing.** Successful re-parses clear DLQ entries automatically. If the cause was transient (Mail.app was mid-writing the file), the next watcher tick will resolve it.
 - **Inspect the DLQ** to see error types:
   ```sql
-  -- ~/.apple-mail-mcp/index.db
+  -- ~/.mac-mail-mcp/index.db
   SELECT emlx_path, error_type, error_message, attempt_count
   FROM failed_index_jobs
   ORDER BY last_seen DESC;

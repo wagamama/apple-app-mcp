@@ -1,4 +1,4 @@
-# Apple Calendar MCP - Domain Instructions
+# Mac Calendar MCP - Domain Instructions
 
 Calendar-specific architecture, tools, workflows, and caveats for this
 repository. Read this file after `AGENTS.md` when working on the Apple Calendar
@@ -6,11 +6,11 @@ MCP server.
 
 ## Project Overview
 
-Apple Calendar MCP is a read-only, JXA-only MCP server focused on
+Mac Calendar MCP is a read-only, JXA-only MCP server focused on
 archive search across Apple Calendar events. It provides a small
 assistant-friendly read surface, backed by a local SQLite + FTS5 index for
 search across all accessible calendar history. The implementation should stay
-separate from Apple Mail MCP as its own package and CLI while following the same
+separate from Mac Mail MCP as its own package and CLI while following the same
 repo workflow and server patterns.
 
 ## Project Structure
@@ -18,7 +18,7 @@ repo workflow and server patterns.
 Package layout:
 
 ```
-packages/apple-calendar-mcp/src/apple_calendar_mcp/
+packages/mac-calendar-mcp/src/apple_calendar_mcp/
 ├── __init__.py         # CLI entry point, exports main()
 ├── cli.py              # CLI commands (index, status, rebuild, serve)
 ├── server.py           # FastMCP server with 6 read-only MCP tools
@@ -358,24 +358,24 @@ CalendarCore.formatDate(date)  // ISO string or null
 ## CLI Commands
 
 ```bash
-apple-calendar-mcp              # Run MCP server (default)
-apple-calendar-mcp serve        # Run MCP server explicitly
-apple-calendar-mcp index        # Build search index from Calendar.app
-apple-calendar-mcp status       # Show index statistics
-apple-calendar-mcp rebuild      # Force rebuild index
-apple-calendar-mcp search       # Search events (JSON output)
-apple-calendar-mcp events       # List event occurrences (JSON output)
-apple-calendar-mcp calendars    # List calendars (JSON output)
-apple-calendar-mcp agenda       # Show agenda (JSON output)
+mac-calendar-mcp              # Run MCP server (default)
+mac-calendar-mcp serve        # Run MCP server explicitly
+mac-calendar-mcp index        # Build search index from Calendar.app
+mac-calendar-mcp status       # Show index statistics
+mac-calendar-mcp rebuild      # Force rebuild index
+mac-calendar-mcp search       # Search events (JSON output)
+mac-calendar-mcp events       # List event occurrences (JSON output)
+mac-calendar-mcp calendars    # List calendars (JSON output)
+mac-calendar-mcp agenda       # Show agenda (JSON output)
 ```
 
 ## Calendar Smoke Checks
 
 ```bash
-uv run --package apple-calendar-mcp --group dev pytest \
-  packages/apple-calendar-mcp/tests
-uv run --package apple-calendar-mcp --group dev apple-calendar-mcp --help
-uv run --package apple-calendar-mcp --group dev python -c \
+uv run --package mac-calendar-mcp --group dev pytest \
+  packages/mac-calendar-mcp/tests
+uv run --package mac-calendar-mcp --group dev mac-calendar-mcp --help
+uv run --package mac-calendar-mcp --group dev python -c \
   "from apple_calendar_mcp import main; print(callable(main))"
 ```
 
@@ -405,12 +405,12 @@ Values should resolve in this precedence order (highest first):
 
 1. CLI flag
 2. Environment variable (`APPLE_CALENDAR_*`)
-3. `~/.apple-calendar-mcp/config.toml`
+3. `~/.mac-calendar-mcp/config.toml`
 4. Built-in default
 
 | Variable | TOML key | Default | Description |
 |----------|----------|---------|-------------|
-| `APPLE_CALENDAR_INDEX_PATH` | `[index] path` | `~/.apple-calendar-mcp/index.db` | Index database location |
+| `APPLE_CALENDAR_INDEX_PATH` | `[index] path` | `~/.mac-calendar-mcp/index.db` | Index database location |
 | `APPLE_CALENDAR_INDEX_STALENESS_HOURS` | `[index] staleness_hours` | `24` | Hours before refresh |
 | `APPLE_CALENDAR_INDEX_PAST_YEARS` | `[index] past_years` | _unset_ | Optional archive backfill limit; unset means all available history |
 | `APPLE_CALENDAR_INDEX_FUTURE_YEARS` | `[index] future_years` | `1` | Future expansion window for recurring events |
@@ -424,10 +424,10 @@ They should measure:
 
 ```bash
 # Planned benchmark scenarios
-apple-calendar-mcp calendars
-apple-calendar-mcp events --start 2026-01-01 --end 2026-02-01
-apple-calendar-mcp search budget
-apple-calendar-mcp agenda --days 7
+mac-calendar-mcp calendars
+mac-calendar-mcp events --start 2026-01-01 --end 2026-02-01
+mac-calendar-mcp search budget
+mac-calendar-mcp agenda --days 7
 ```
 
 Key files should mirror the Mail benchmark structure if Calendar benchmarks are

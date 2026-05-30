@@ -1,12 +1,12 @@
-# Apple Mail MCP
+# Mac Mail MCP
 
-The only Apple Mail MCP server with **full-coverage FTS5 body search**. Reliable on large mailboxes where AppleScript-based servers timeout — with 8 tools for reading, searching, and extracting email content. Also works as a standalone CLI.
+The only Mac Mail MCP server with **full-coverage FTS5 body search**. Reliable on large mailboxes where AppleScript-based servers timeout — with 8 tools for reading, searching, and extracting email content. Also works as a standalone CLI.
 
 ---
 
-## Why Apple Mail MCP?
+## Why Mac Mail MCP?
 
-Tested against [6 other Apple Mail MCP servers](benchmarks.md) on a real ~73K-message mailbox:
+Tested against [6 other Mac Mail MCP servers](benchmarks.md) on a real ~73K-message mailbox:
 
 - **Only server with full-coverage body search.** Most competitors don't support body search at all; the one that does (BastianZim) caps at the 5000 most recent messages — silent miss on older mail. Our FTS5 covers the entire mailbox.
 - **~3ms** single email fetch via disk-first `.emlx` reading.
@@ -61,7 +61,7 @@ mac-mail-mcp emails --filter unread --limit 10
 Generate a Claude Code skill for CLI-based access:
 
 ```bash
-mac-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
+mac-mail-mcp integrate claude > "$HOME/.claude/skills/mac-mail.md"
 ```
 
 ## Next Steps

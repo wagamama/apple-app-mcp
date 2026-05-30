@@ -19,5 +19,5 @@ def test_calendar_distribution_exposes_console_scripts():
     }
 
     assert dist.metadata["Name"] == "mac-calendar-mcp"
+    assert set(scripts) == {"mac-calendar-mcp"}
     assert scripts["mac-calendar-mcp"] == "apple_calendar_mcp:main"
-    assert scripts["apple-calendar-mcp"] == "apple_calendar_mcp:main"

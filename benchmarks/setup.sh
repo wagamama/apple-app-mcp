@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Setup script for apple-mail-mcp competitive benchmarks.
-# Installs all 8 competitor MCP servers into ~/.cache/apple-mail-mcp-bench/.
+# Setup script for mac-mail-mcp competitive benchmarks.
+# Installs all 8 competitor MCP servers into ~/.cache/mac-mail-mcp-bench/.
 #
 # Usage: bash benchmarks/setup.sh
 
 set -euo pipefail
 
-CACHE_DIR="$HOME/.cache/apple-mail-mcp-bench"
+CACHE_DIR="$HOME/.cache/mac-mail-mcp-bench"
 mkdir -p "$CACHE_DIR"
 
 log() { printf "\033[1;34m==> %s\033[0m\n" "$1"; }
@@ -31,14 +31,14 @@ install_or_skip() {
     fi
 }
 
-# ─── 1. imdinu/apple-mail-mcp (ours) ─────────────────────────
-log "Checking apple-mail-mcp (ours)..."
+# ─── 1. wagamama/apple-app-mcp (ours) ─────────────────────────
+log "Checking mac-mail-mcp (ours)..."
 if command -v uvx &>/dev/null; then
-    ok "apple-mail-mcp (installed via uvx at runtime)"
-    INSTALLED+=("imdinu/apple-mail-mcp")
+    ok "mac-mail-mcp (installed via uvx at runtime)"
+    INSTALLED+=("wagamama/apple-app-mcp")
 else
     warn "uvx not found — install uv first: https://docs.astral.sh/uv/"
-    SKIPPED+=("imdinu/apple-mail-mcp")
+    SKIPPED+=("wagamama/apple-app-mcp")
 fi
 
 # ─── 2. patrickfreyer/apple-mail-mcp ─────────────────────────
@@ -61,7 +61,7 @@ install_or_skip "patrickfreyer/apple-mail-mcp" install_patrickfreyer
 
 # (Slot 3 vacated — s-morgan-jeffries was demoted to "Also noted" on
 #  2026-05-28 because it's non-functional on macOS 26. The clone at
-#  ~/.cache/apple-mail-mcp-bench/smorgan-apple-mail-mcp/ can be left
+#  ~/.cache/mac-mail-mcp-bench/smorgan-apple-mail-mcp/ can be left
 #  in place or deleted manually; setup.sh no longer installs or
 #  refreshes it.)
 

@@ -14,7 +14,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Any
 
-CACHE_DIR = os.path.expanduser("~/.cache/apple-mail-mcp-bench")
+CACHE_DIR = os.path.expanduser("~/.cache/mac-mail-mcp-bench")
 
 # Default search query used across all benchmarks
 SEARCH_QUERY = "meeting"
@@ -57,15 +57,15 @@ def _register(c: Competitor) -> None:
     COMPETITORS[c.key] = c
 
 
-# 1. imdinu/apple-mail-mcp (ours)
+# 1. wagamama/apple-app-mcp (ours)
 _register(
     Competitor(
-        name="apple-mail-mcp (ours)",
+        name="mac-mail-mcp (ours)",
         key="imdinu",
         command=[
             "uv",
             "run",
-            "apple-mail-mcp",
+            "mac-mail-mcp",
             "serve",
         ],
         tool_mapping={

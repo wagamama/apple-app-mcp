@@ -1,7 +1,7 @@
 [project]
 name = "mac-calendar-mcp"
 version = "0.1.0"
-description = "Read-only Apple Calendar MCP server with indexed archive search."
+description = "Read-only Mac Calendar MCP server with indexed archive search."
 readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.11"
@@ -10,10 +10,9 @@ authors = [
 ]
 keywords = [
     "apple-calendar",
-    "apple-calendar-mcp",
+    "mac-calendar-mcp",
     "calendar",
     "jxa",
-    "mac-calendar-mcp",
     "macos",
     "mcp",
     "model-context-protocol",
@@ -55,7 +54,6 @@ Changelog = "https://github.com/wagamama/apple-app-mcp/blob/main/CHANGELOG.md"
 
 [project.scripts]
 mac-calendar-mcp = "apple_calendar_mcp:main"
-apple-calendar-mcp = "apple_calendar_mcp:main"
 
 [dependency-groups]
 dev = [

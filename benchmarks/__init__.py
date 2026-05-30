@@ -1,1 +1,1 @@
-# Competitive benchmarking suite for apple-mail-mcp
+# Competitive benchmarking suite for mac-mail-mcp

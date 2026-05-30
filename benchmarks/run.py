@@ -258,7 +258,7 @@ def print_summary(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Run apple-mail-mcp competitive benchmarks"
+        description="Run mac-mail-mcp competitive benchmarks"
     )
     parser.add_argument(
         "--competitor",

@@ -1,6 +1,6 @@
 # Benchmarks
 
-Competitive benchmarks comparing Apple Mail MCP against 6 other Apple Mail MCP servers — inspired by [uv's BENCHMARKS.md](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md).
+Competitive benchmarks comparing Mac Mail MCP against 6 other Mac Mail MCP servers — inspired by [uv's BENCHMARKS.md](https://github.com/astral-sh/uv/blob/main/BENCHMARKS.md).
 
 All benchmarks are run at the **MCP protocol level**: we spawn each server as a subprocess, connect as a JSON-RPC client over stdio, and time real tool calls. This measures what an AI assistant actually experiences.
 
@@ -8,14 +8,14 @@ All benchmarks are run at the **MCP protocol level**: we spawn each server as a 
 
 On a real **~73K-message mailbox**, only two servers complete every benchmarked operation: ours and BastianZim. The rest hit timeouts, AppleScript errors, or don't support some operations.
 
-But "completes the operation" isn't the same as "covers the full mailbox." BastianZim's body search live-scans only the **5000 most recent messages** (per their README) — fast, but silent on anything older. Apple Mail MCP's FTS5 index covers the entire mailbox at every size we've tested.
+But "completes the operation" isn't the same as "covers the full mailbox." BastianZim's body search live-scans only the **5000 most recent messages** (per their README) — fast, but silent on anything older. Mac Mail MCP's FTS5 index covers the entire mailbox at every size we've tested.
 
 ![Capability Matrix](benchmark_overview.png)
 
 ### What This Means
 
-- **Full-coverage body search is exclusive to Apple Mail MCP.** BastianZim has a body parameter but caps the scan at 5000 messages — see the "5K cap" cells in the matrix above. Every other competitor either doesn't support body search at all or scans only a partial set.
-- **Apple's Envelope Index is the secret sauce when you don't need body search — and as of 0.4, Apple Mail MCP reads it directly too.** BastianZim, rusty, pl-lyfx, and now ours all read the same `~/Library/Mail/V*/MailData/Envelope Index` SQLite for metadata-listing operations, which is why `list_accounts` and `get_emails` cluster at the top. Before 0.4, ours went through JXA for those tools (~150ms and ~1.2s) — the 0.4 perf refactor routes them through the same SQLite path the fast competitors use, dropping us into the 1–5ms band on metadata while keeping the FTS5 + `.emlx` paths for body search and single-fetch.
+- **Full-coverage body search is exclusive to Mac Mail MCP.** BastianZim has a body parameter but caps the scan at 5000 messages — see the "5K cap" cells in the matrix above. Every other competitor either doesn't support body search at all or scans only a partial set.
+- **Apple's Envelope Index is the secret sauce when you don't need body search — and as of 0.4, Mac Mail MCP reads it directly too.** BastianZim, rusty, pl-lyfx, and now ours all read the same `~/Library/Mail/V*/MailData/Envelope Index` SQLite for metadata-listing operations, which is why `list_accounts` and `get_emails` cluster at the top. Before 0.4, ours went through JXA for those tools (~150ms and ~1.2s) — the 0.4 perf refactor routes them through the same SQLite path the fast competitors use, dropping us into the 1–5ms band on metadata while keeping the FTS5 + `.emlx` paths for body search and single-fetch.
 - **AppleScript-based servers are mixed at this scale.** patrickfreyer, sweetrb, and titouancreach all wrap `osascript` for live Mail.app queries. They can be reasonably fast for queries Mail.app indexes (subject — patrickfreyer hits ~570ms across all mailboxes via `whose subject contains`), but timeouts and errors are common for body search and bulk fetches — `whose body contains` has no backing index at the OS layer and walks every message.
 - **Single email fetch is a near-tie at the top.** Our disk-first `.emlx` reader hits ~3ms; BastianZim's hits ~1ms via direct envelope-index lookup; Rust hits ~3ms.
 
@@ -102,7 +102,7 @@ FTS5 column filtering gives us ~10ms subject search, competitive with rusty's di
 
 ### Search by Body
 
-**This is where the project's thesis holds.** Apple Mail MCP is the only server that searches **the entire indexed mailbox** for body matches. Most competitors don't support body search at all. BastianZim does, but caps at the 5000 most recent messages — so the chart below excludes it.
+**This is where the project's thesis holds.** Mac Mail MCP is the only server that searches **the entire indexed mailbox** for body matches. Most competitors don't support body search at all. BastianZim does, but caps at the 5000 most recent messages — so the chart below excludes it.
 
 > **Why BastianZim is excluded from this chart, not just labeled slow:** their median is ~2.4ms because the work *is* small (5000 messages instead of 73,500). The number is real but the comparison would be misleading. On the user's mailbox that's roughly 7% coverage — anything older than the most recent 5000 messages will return zero matches with no warning. Our median of ~28ms is for full-coverage FTS5 search; the comparable BastianZim scenario (uncapped body search) doesn't exist.
 

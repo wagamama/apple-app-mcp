@@ -1,4 +1,4 @@
-"""Configuration for Apple Calendar MCP server."""
+"""Configuration for Mac Calendar MCP server."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import os
 import tomllib
 from pathlib import Path
 
-DEFAULT_INDEX_PATH = Path.home() / ".apple-calendar-mcp" / "index.db"
-CONFIG_FILE_PATH = Path.home() / ".apple-calendar-mcp" / "config.toml"
+DEFAULT_INDEX_PATH = Path.home() / ".mac-calendar-mcp" / "index.db"
+CONFIG_FILE_PATH = Path.home() / ".mac-calendar-mcp" / "config.toml"
 CONFIG_SCHEMA_VERSION = 1
 
 CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {

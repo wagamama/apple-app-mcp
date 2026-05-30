@@ -1,12 +1,12 @@
 # Architecture Deep Dive
 
-A detailed look at how Apple Mail MCP reads emails at disk speed, why JXA is slow, and how the FTS5 index ties it all together.
+A detailed look at how Mac Mail MCP reads emails at disk speed, why JXA is slow, and how the FTS5 index ties it all together.
 
 ![Architecture Overview](architecture-overview.jpg)
 
 ## The Three Access Layers
 
-Apple Mail MCP uses a **3-layer architecture** where each tool picks the fastest available path for its operation:
+Mac Mail MCP uses a **3-layer architecture** where each tool picks the fastest available path for its operation:
 
 | Layer | Latency | Used By | Requires |
 |-------|---------|---------|----------|
@@ -186,7 +186,7 @@ JXA is the only way to get **real-time state** from Mail.app. Disk files reflect
 
 ## The FTS5 Search Index
 
-We maintain a separate SQLite database (`~/.apple-mail-mcp/index.db`) with an [FTS5](https://www.sqlite.org/fts5.html) virtual table for full-text search. This is what makes body search possible in ~2ms instead of requiring JXA to iterate every email.
+We maintain a separate SQLite database (`~/.mac-mail-mcp/index.db`) with an [FTS5](https://www.sqlite.org/fts5.html) virtual table for full-text search. This is what makes body search possible in ~2ms instead of requiring JXA to iterate every email.
 
 ### Schema (v5)
 

@@ -887,7 +887,7 @@ wheels = [
 [[package]]
 name = "mac-calendar-mcp"
 version = "0.1.0"
-source = { editable = "packages/apple-calendar-mcp" }
+source = { editable = "packages/mac-calendar-mcp" }
 dependencies = [
     { name = "authlib" },
     { name = "cryptography" },
@@ -934,7 +934,7 @@ dev = [
 [[package]]
 name = "mac-mail-mcp"
 version = "0.4.0"
-source = { editable = "packages/apple-mail-mcp" }
+source = { editable = "packages/mac-mail-mcp" }
 dependencies = [
     { name = "authlib" },
     { name = "beautifulsoup4" },

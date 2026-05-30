@@ -1,4 +1,4 @@
-"""Apple Mail MCP — full-coverage FTS5 body search for Apple Mail.
+"""Mac Mail MCP — full-coverage FTS5 body search for Apple Mail.
 
 Features:
 - Disk-first email reading (~3ms via .emlx parsing, no JXA needed)

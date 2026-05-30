@@ -1,6 +1,6 @@
 # Getting Started
 
-Get Apple Mail MCP running with Claude in under 2 minutes.
+Get Mac Mail MCP running with Claude in under 2 minutes.
 
 ## Prerequisites
 
@@ -96,7 +96,7 @@ mac-mail-mcp emails --filter unread --limit 10
 Generate a Claude Code skill for CLI-based access:
 
 ```bash
-mac-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
+mac-mail-mcp integrate claude > "$HOME/.claude/skills/mac-mail.md"
 ```
 
 See [Configuration](configuration.md#cli-commands) for the full command list.

@@ -6,8 +6,8 @@ Workspace for MCP servers that expose local Apple app data to assistants.
 
 | Package | Status | Purpose |
 |---------|--------|---------|
-| [`mac-mail-mcp`](packages/apple-mail-mcp/) | Beta | Apple Mail MCP server with disk-first reads and full-coverage FTS5 body search. |
-| [`mac-calendar-mcp`](packages/apple-calendar-mcp/) | Alpha | Read-only Apple Calendar MCP server with indexed archive search. |
+| [`mac-mail-mcp`](packages/mac-mail-mcp/) | Beta | Mac Mail MCP server with disk-first reads and full-coverage FTS5 body search. |
+| [`mac-calendar-mcp`](packages/mac-calendar-mcp/) | Alpha | Read-only Mac Calendar MCP server with indexed archive search. |
 
 ## Quick Start
 
@@ -33,9 +33,6 @@ Add one or both servers to your MCP client:
 }
 ```
 
-The older `apple-mail-mcp` and `apple-calendar-mcp` commands remain available
-as compatibility aliases.
-
 Build local indexes for fast search:
 
 ```bash
@@ -54,12 +51,12 @@ cd apple-app-mcp
 uv sync
 
 # All packages
-uv run ruff check packages/apple-mail-mcp/src packages/apple-calendar-mcp/src
+uv run ruff check packages/mac-mail-mcp/src packages/mac-calendar-mcp/src
 uv run pytest
 
 # Individual packages
-uv run --package mac-mail-mcp pytest packages/apple-mail-mcp/tests
-uv run --package mac-calendar-mcp pytest packages/apple-calendar-mcp/tests
+uv run --package mac-mail-mcp pytest packages/mac-mail-mcp/tests
+uv run --package mac-calendar-mcp pytest packages/mac-calendar-mcp/tests
 ```
 
 Build distributions:
@@ -74,7 +71,8 @@ uv build --package mac-calendar-mcp
 - Shared agent instructions: [`AGENTS.md`](AGENTS.md)
 - Mail domain notes: [`MAIL.md`](MAIL.md)
 - Calendar domain notes: [`CALENDAR.md`](CALENDAR.md)
-- Calendar implementation plan: [`docs/superpowers/plans/2026-05-30-apple-calendar-mcp-implementation.md`](docs/superpowers/plans/2026-05-30-apple-calendar-mcp-implementation.md)
+- MCP client setup guide: [`docs/mcp-client-setup.md`](docs/mcp-client-setup.md)
+- Calendar implementation plan: [`docs/superpowers/plans/2026-05-30-mac-calendar-mcp-implementation.md`](docs/superpowers/plans/2026-05-30-mac-calendar-mcp-implementation.md)
 
 ## License
 

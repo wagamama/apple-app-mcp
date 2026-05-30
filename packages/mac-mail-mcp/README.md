@@ -1,9 +1,9 @@
-# Apple Mail MCP
+# Mac Mail MCP
 
 <!-- mcp-name: io.github.wagamama/mac-mail-mcp -->
 
 <p align="center">
-  <img src="../../docs/assets/social-card.svg" alt="Apple Mail MCP — Full-coverage FTS5 body search" width="720">
+  <img src="../../docs/assets/social-card.svg" alt="Mac Mail MCP — Full-coverage FTS5 body search" width="720">
 </p>
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -13,7 +13,7 @@
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![CI](https://github.com/wagamama/apple-app-mcp/actions/workflows/lint.yml/badge.svg)](https://github.com/wagamama/apple-app-mcp/actions/workflows/lint.yml)
 
-The only Apple Mail MCP server with **full-coverage body search** — reliable on large mailboxes where AppleScript-based servers timeout. 8 tools for reading, searching, and extracting email content.
+The only Mac Mail MCP server with **full-coverage body search** — reliable on large mailboxes where AppleScript-based servers timeout. 8 tools for reading, searching, and extracting email content.
 
 **[Read the docs](https://wagamama.github.io/apple-app-mcp/)** for the full guide.
 
@@ -35,8 +35,6 @@ Add to your MCP client:
 }
 ```
 
-`apple-mail-mcp` remains available as a compatibility command alias.
-
 ### Build the Search Index (Recommended)
 
 ```bash
@@ -49,7 +47,7 @@ mac-mail-mcp index --verbose
 ### Configure (Optional)
 
 ```bash
-mac-mail-mcp init   # writes ~/.apple-mail-mcp/config.toml
+mac-mail-mcp init   # writes ~/.mac-mail-mcp/config.toml
 ```
 
 Writes a commented config file you can edit to set defaults like your
@@ -73,7 +71,7 @@ for the full schema and precedence rules.
 
 ## Performance
 
-Tested against [6 other Apple Mail MCP servers](https://wagamama.github.io/apple-app-mcp/benchmarks/) on a real **~73K-message** mailbox:
+Tested against [6 other Mac Mail MCP servers](https://wagamama.github.io/apple-app-mcp/benchmarks/) on a real **~73K-message** mailbox:
 
 - **Only server with full-coverage body search.** Most competitors don't support body search at all; the one that does (BastianZim) live-scans only the 5000 most recent messages — silent miss on anything older. Our FTS5 index covers the entire mailbox.
 - **~3ms single email fetch** via disk-first `.emlx` reading (no JXA round-trip).
@@ -85,7 +83,7 @@ Tested against [6 other Apple Mail MCP servers](https://wagamama.github.io/apple
 
 ## Configuration
 
-Apple Mail MCP works out of the box. To customize defaults, run
+Mac Mail MCP works out of the box. To customize defaults, run
 `mac-mail-mcp init` to generate a `config.toml` template — or use
 the matching `APPLE_MAIL_*` environment variables. See the
 [Configuration docs](https://wagamama.github.io/apple-app-mcp/configuration/)
@@ -124,7 +122,7 @@ mac-mail-mcp extract 12345 invoice.pdf
 All commands output JSON. Generate a [Claude Code skill](https://wagamama.github.io/apple-app-mcp/configuration/#cli-commands) for CLI-based access:
 
 ```bash
-mac-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
+mac-mail-mcp integrate claude > "$HOME/.claude/skills/mac-mail.md"
 ```
 
 ## Development
@@ -133,8 +131,8 @@ mac-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
 git clone https://github.com/wagamama/apple-app-mcp
 cd apple-app-mcp
 uv sync
-uv run ruff check packages/apple-mail-mcp/src
-uv run --package mac-mail-mcp pytest packages/apple-mail-mcp/tests
+uv run ruff check packages/mac-mail-mcp/src
+uv run --package mac-mail-mcp pytest packages/mac-mail-mcp/tests
 ```
 
 ## License

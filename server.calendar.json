@@ -1,8 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.wagamama/mac-calendar-mcp",
-  "title": "Apple Calendar MCP",
-  "description": "Read-only Apple Calendar MCP server with indexed archive search.",
+  "title": "Mac Calendar MCP",
+  "description": "Read-only Mac Calendar MCP server with indexed archive search.",
   "repository": {
     "url": "https://github.com/wagamama/apple-app-mcp",
     "source": "github"

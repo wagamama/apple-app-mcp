@@ -317,7 +317,7 @@ def status(
 
     stats = manager.get_stats()
 
-    print("Apple Mail MCP Index Status")
+    print("Mac Mail MCP Index Status")
     print("=" * 40)
     print(f"Location:     {get_index_path()}")
     print(f"Emails:       {stats.email_count:,}")
@@ -480,7 +480,7 @@ def cli_init(
     ] = False,
 ) -> None:
     """
-    Write a commented config.toml template to ~/.apple-mail-mcp/.
+    Write a commented config.toml template to ~/.mac-mail-mcp/.
 
     The template documents every available key alongside its matching
     environment variable. Edit and uncomment to override defaults.
@@ -588,7 +588,7 @@ def claude() -> None:
     Outputs markdown to stdout. Pipe to a file:
 
         mac-mail-mcp integrate claude \\
-            > ~/.claude/skills/apple-mail.md
+            > ~/.claude/skills/mac-mail.md
     """
     print(_CLAUDE_SKILL)
 

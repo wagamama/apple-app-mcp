@@ -1,6 +1,6 @@
 # Profiling
 
-Apple Mail MCP ships a `--profile PATH` flag on `index` and `rebuild` so
+Mac Mail MCP ships a `--profile PATH` flag on `index` and `rebuild` so
 you can capture a performance trace of the indexing pipeline and share
 it in a bug report — or use it locally to diagnose slow syncs on your
 own mailbox.

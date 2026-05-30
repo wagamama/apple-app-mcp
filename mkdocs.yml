@@ -1,6 +1,6 @@
-site_name: Apple Mail MCP
+site_name: Mac Mail MCP
 site_url: https://wagamama.github.io/apple-app-mcp/
-site_description: Apple Mail MCP server with full-coverage FTS5 body search. Reliable on large mailboxes where AppleScript-based servers timeout.
+site_description: Mac Mail MCP server with full-coverage FTS5 body search. Reliable on large mailboxes where AppleScript-based servers timeout.
 site_author: Ioan-Mihail Dinu
 
 repo_name: wagamama/apple-app-mcp
@@ -63,6 +63,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Installation: installation.md
+  - MCP Client Setup: mcp-client-setup.md
   - Configuration: configuration.md
   - Tools: tools.md
   - Search & Indexing: search.md

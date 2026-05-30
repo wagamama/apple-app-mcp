@@ -1,7 +1,7 @@
 # Configuration
 
-Apple Mail MCP can be configured via a TOML config file at
-`~/.apple-mail-mcp/config.toml`, environment variables, or both. All
+Mac Mail MCP can be configured via a TOML config file at
+`~/.mac-mail-mcp/config.toml`, environment variables, or both. All
 settings have sensible defaults — no configuration is required to get
 started.
 
@@ -13,14 +13,14 @@ Generate a commented config file:
 mac-mail-mcp init
 ```
 
-This writes `~/.apple-mail-mcp/config.toml` with every available key
+This writes `~/.mac-mail-mcp/config.toml` with every available key
 documented inline. All values are commented out, so defaults remain in
 effect — uncomment what you want to override. Pass `--force` to
 overwrite an existing config file.
 
 ## Configuration file
 
-The TOML file at `~/.apple-mail-mcp/config.toml` is loaded on every
+The TOML file at `~/.mac-mail-mcp/config.toml` is loaded on every
 server start. All sections and keys are optional.
 
 ```toml
@@ -31,7 +31,7 @@ config_version = 1
 # mailbox = "INBOX"             # Default mailbox
 
 [index]
-# path = "~/.apple-mail-mcp/index.db"   # FTS5 database location
+# path = "~/.mac-mail-mcp/index.db"   # FTS5 database location
 # max_emails = 5000             # Per-mailbox ceiling (omit for uncapped)
 # staleness_hours = 24.0        # Hours before re-sync
 # exclude_mailboxes = ["Drafts"]   # Mailboxes to skip during indexing
@@ -59,7 +59,7 @@ in CI or in MCP client launch configs.
 |----------|---------|-------------|
 | `APPLE_MAIL_DEFAULT_ACCOUNT` | First account | Default email account for all tools |
 | `APPLE_MAIL_DEFAULT_MAILBOX` | `INBOX` | Default mailbox when none specified |
-| `APPLE_MAIL_INDEX_PATH` | `~/.apple-mail-mcp/index.db` | SQLite index database location |
+| `APPLE_MAIL_INDEX_PATH` | `~/.mac-mail-mcp/index.db` | SQLite index database location |
 | `APPLE_MAIL_INDEX_MAX_EMAILS` | _unset_ | Optional per-mailbox ceiling (default: uncapped) |
 | `APPLE_MAIL_INDEX_STALENESS_HOURS` | `24` | Hours before index is considered stale |
 | `APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES` | `Drafts` | Comma-separated mailboxes to skip in search |
@@ -72,7 +72,7 @@ source wins. From highest to lowest:
 
 1. **CLI flags** (e.g. `mac-mail-mcp serve -r`)
 2. **Environment variables** (`APPLE_MAIL_*`)
-3. **TOML config file** (`~/.apple-mail-mcp/config.toml`)
+3. **TOML config file** (`~/.mac-mail-mcp/config.toml`)
 4. **Built-in defaults**
 
 For multi-client deployments (Claude Desktop + Cursor + Cline + ...),
@@ -118,7 +118,7 @@ When read-only mode is active, write-capable MCP tools raise
 
 ## Index location
 
-The FTS5 index database is stored at `~/.apple-mail-mcp/index.db` by
+The FTS5 index database is stored at `~/.mac-mail-mcp/index.db` by
 default. Override via the env var or TOML key:
 
 ```bash
@@ -155,7 +155,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```
 
 If you have multiple MCP clients, consider setting durable defaults in
-`~/.apple-mail-mcp/config.toml` instead, and keep the `env` block here
+`~/.mac-mail-mcp/config.toml` instead, and keep the `env` block here
 for per-client overrides only.
 
 ### Claude Code

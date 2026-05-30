@@ -67,7 +67,7 @@ class IndexManager:
     """
     Manages the FTS5 search index for email body search.
 
-    The index is stored at ~/.apple-mail-mcp/index.db by default.
+    The index is stored at ~/.mac-mail-mcp/index.db by default.
     Use environment variables to customize:
     - APPLE_MAIL_INDEX_PATH: Database location
     - APPLE_MAIL_INDEX_MAX_EMAILS: Optional per-mailbox cap (default: uncapped)

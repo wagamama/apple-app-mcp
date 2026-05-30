@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for apple-mail-mcp tests."""
+"""Shared pytest fixtures for mac-mail-mcp tests."""
 
 from __future__ import annotations
 

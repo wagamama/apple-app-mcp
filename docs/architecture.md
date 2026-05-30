@@ -1,11 +1,11 @@
 # Architecture
 
-Apple Mail MCP uses a **3-layer hybrid access pattern** — disk-first reads for single emails (~1-5ms), FTS5 for search, and JXA as a fallback for real-time operations.
+Mac Mail MCP uses a **3-layer hybrid access pattern** — disk-first reads for single emails (~1-5ms), FTS5 for search, and JXA as a fallback for real-time operations.
 
 ## Project Structure
 
 ```
-packages/apple-mail-mcp/src/apple_mail_mcp/
+packages/mac-mail-mcp/src/apple_mail_mcp/
 ├── __init__.py         # CLI entry point, exports main()
 ├── cli.py              # CLI commands (index, status, rebuild, serve)
 ├── server.py           # FastMCP server with 8 MCP tools + 1 resource

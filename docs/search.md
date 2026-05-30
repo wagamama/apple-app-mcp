@@ -1,12 +1,12 @@
 # Search & Indexing
 
-Apple Mail MCP includes an optional **FTS5 search index** that makes body search **700–3500x faster** — ~2ms instead of ~7s.
+Mac Mail MCP includes an optional **FTS5 search index** that makes body search **700–3500x faster** — ~2ms instead of ~7s.
 
 ## How It Works
 
 ```
 ┌─────────────────────┐     ┌──────────────────┐
-│  ~/Library/Mail/V10 │     │  ~/.apple-mail-mcp│
+│  ~/Library/Mail/V10 │     │  ~/.mac-mail-mcp│
 │  ├── account-uuid/  │────▶│  └── index.db     │
 │  │   └── mailbox/   │     │      (SQLite+FTS5)│
 │  │       └── *.emlx │     └──────────────────┘

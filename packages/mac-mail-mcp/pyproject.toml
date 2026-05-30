@@ -1,7 +1,7 @@
 [project]
 name = "mac-mail-mcp"
 version = "0.4.0"
-description = "Apple Mail MCP server with full-coverage FTS5 body search. Reliable on large mailboxes where AppleScript-based servers timeout."
+description = "Mac Mail MCP server with full-coverage FTS5 body search. Reliable on large mailboxes where AppleScript-based servers timeout."
 readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.11"
@@ -11,7 +11,6 @@ authors = [
 keywords = [
     "anthropic",
     "apple-mail",
-    "apple-mail-mcp",
     "mac-mail-mcp",
     "claude",
     "claude-code",
@@ -68,7 +67,6 @@ Changelog = "https://github.com/wagamama/apple-app-mcp/blob/main/CHANGELOG.md"
 
 [project.scripts]
 mac-mail-mcp = "apple_mail_mcp:main"
-apple-mail-mcp = "apple_mail_mcp:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/apple_mail_mcp"]

@@ -9,10 +9,10 @@ workspace's Mail and Calendar MCP servers from PyPI with `pipx`.
 
 Use the first available naming priority from the user request:
 
-| Server | PyPI distribution | Preferred command | Compatibility command |
-|--------|-------------------|-------------------|-----------------------|
-| Mail | `mac-mail-mcp` | `mac-mail-mcp` | `apple-mail-mcp` |
-| Calendar | `mac-calendar-mcp` | `mac-calendar-mcp` | `apple-calendar-mcp` |
+| Server | PyPI distribution | Command |
+|--------|-------------------|---------|
+| Mail | `mac-mail-mcp` | `mac-mail-mcp` |
+| Calendar | `mac-calendar-mcp` | `mac-calendar-mcp` |
 
 PyPI JSON availability was checked on 2026-05-31. `mac-mail-mcp`,
 `mac-calendar-mcp`, `macos-mail-mcp`, and `macos-calendar-mcp` all returned
@@ -29,9 +29,9 @@ Keep internal Python import packages unchanged:
 This avoids unnecessary source churn and preserves existing code, tests, and
 user integrations that import modules directly.
 
-Keep the old console script names as aliases. Existing MCP client configs that
-run `apple-mail-mcp` or `apple-calendar-mcp` should continue to work after a
-user installs the renamed distributions.
+Do not keep the old `apple-*` console script names as aliases. Existing MCP
+client configs should be updated to run `mac-mail-mcp` or
+`mac-calendar-mcp`.
 
 ## Publishing
 
@@ -54,9 +54,7 @@ new project names before the first release can publish successfully.
 
 ## Documentation
 
-Docs and README examples should prefer the new `mac-*` package and command
-names while mentioning the old `apple-*` command names as compatibility aliases
-where useful.
+Docs and README examples should use the new `mac-*` package and command names.
 
 Do not add personal or machine-specific values to docs. Use public repository
 URLs or placeholders only.
@@ -75,8 +73,7 @@ Before completion, verify:
 - Metadata names and console scripts are updated.
 - Lockfile reflects renamed workspace packages.
 - Both distributions build locally.
-- Built wheels expose the preferred commands and compatibility aliases.
+- Built wheels expose only the new `mac-*` commands.
 - Tests pass.
 - README and package docs show the new install commands.
 - Release workflow builds both packages.
-

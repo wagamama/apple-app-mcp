@@ -11,8 +11,8 @@ package = false
 
 [tool.uv.workspace]
 members = [
-    "packages/apple-mail-mcp",
-    "packages/apple-calendar-mcp",
+    "packages/mac-mail-mcp",
+    "packages/mac-calendar-mcp",
 ]
 
 [dependency-groups]
@@ -37,12 +37,12 @@ addopts = [
     "--import-mode=importlib",
 ]
 testpaths = [
-    "packages/apple-mail-mcp/tests",
-    "packages/apple-calendar-mcp/tests",
+    "packages/mac-mail-mcp/tests",
+    "packages/mac-calendar-mcp/tests",
 ]
 pythonpath = [
-    "packages/apple-mail-mcp/src",
-    "packages/apple-calendar-mcp/src",
+    "packages/mac-mail-mcp/src",
+    "packages/mac-calendar-mcp/src",
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
@@ -51,8 +51,8 @@ asyncio_default_fixture_loop_scope = "function"
 target-version = "py311"
 line-length = 80
 src = [
-    "packages/apple-mail-mcp/src",
-    "packages/apple-calendar-mcp/src",
+    "packages/mac-mail-mcp/src",
+    "packages/mac-calendar-mcp/src",
 ]
 
 [tool.ruff.lint]

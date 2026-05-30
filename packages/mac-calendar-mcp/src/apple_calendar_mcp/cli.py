@@ -71,7 +71,7 @@ def status(verbose: bool = False) -> None:
         print(f"Expected location: {get_index_path()}")
         sys.exit(1)
     stats = manager.get_stats()
-    print("Apple Calendar MCP Index Status")
+    print("Mac Calendar MCP Index Status")
     print("=" * 40)
     print(f"Location:     {get_index_path()}")
     print(f"Calendars:    {stats.calendar_count:,}")
@@ -119,5 +119,5 @@ def agenda(start: str | None = None, days: int = 1) -> None:
 
 
 def main() -> None:
-    """Run the Apple Calendar MCP CLI."""
+    """Run the Mac Calendar MCP CLI."""
     app()

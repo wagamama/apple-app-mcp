@@ -1,9 +1,9 @@
-"""Configuration for Apple Mail MCP server.
+"""Configuration for Mac Mail MCP server.
 
 Resolution order for every value (highest precedence first):
   1. Programmatic override (e.g. ``set_read_only_mode``, CLI flags).
   2. Environment variable (``APPLE_MAIL_*``).
-  3. ``~/.apple-mail-mcp/config.toml`` (schema v1).
+  3. ``~/.mac-mail-mcp/config.toml`` (schema v1).
   4. Hardcoded default.
 """
 
@@ -12,8 +12,8 @@ import tomllib
 from pathlib import Path
 
 # Default index location
-DEFAULT_INDEX_PATH = Path.home() / ".apple-mail-mcp" / "index.db"
-CONFIG_FILE_PATH = Path.home() / ".apple-mail-mcp" / "config.toml"
+DEFAULT_INDEX_PATH = Path.home() / ".mac-mail-mcp" / "index.db"
+CONFIG_FILE_PATH = Path.home() / ".mac-mail-mcp" / "config.toml"
 
 CONFIG_SCHEMA_VERSION = 1
 
@@ -40,7 +40,7 @@ CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {
 
 
 class ConfigError(RuntimeError):
-    """Raised when ``~/.apple-mail-mcp/config.toml`` is malformed or invalid."""
+    """Raised when ``~/.mac-mail-mcp/config.toml`` is malformed or invalid."""
 
 
 # Cache state. The sentinel distinguishes "not yet loaded" from "loaded as {}".
@@ -217,7 +217,7 @@ def get_index_path() -> Path:
     Get the FTS5 index database path.
 
     Resolution: ``APPLE_MAIL_INDEX_PATH`` env, then ``[index] path``
-    in ``config.toml``, then ``~/.apple-mail-mcp/index.db``.
+    in ``config.toml``, then ``~/.mac-mail-mcp/index.db``.
     """
     env = os.environ.get("APPLE_MAIL_INDEX_PATH")
     if env:
@@ -312,7 +312,7 @@ def set_read_only_mode(value: bool) -> None:
 # sees the full surface and the matching env-var name on each line, then
 # uncomments what they want. Forward-compat keys for #89 are included.
 CONFIG_TEMPLATE = """\
-# Apple Mail MCP — configuration
+# Mac Mail MCP — configuration
 # https://github.com/wagamama/apple-app-mcp
 #
 # Resolution order (highest precedence first):
@@ -342,7 +342,7 @@ config_version = 1
 
 # Path to the FTS5 search index database.
 # Env: APPLE_MAIL_INDEX_PATH
-# path = "~/.apple-mail-mcp/index.db"
+# path = "~/.mac-mail-mcp/index.db"
 
 # Maximum emails to index per mailbox. Omit for uncapped (default).
 # Env: APPLE_MAIL_INDEX_MAX_EMAILS

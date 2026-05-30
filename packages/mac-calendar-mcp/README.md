@@ -1,4 +1,4 @@
-# Apple Calendar MCP
+# Mac Calendar MCP
 
 <!-- mcp-name: io.github.wagamama/mac-calendar-mcp -->
 
@@ -8,14 +8,14 @@
 [![MCP](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
-Read-only Apple Calendar MCP server with indexed archive search. It exposes
+Read-only Mac Calendar MCP server with indexed archive search. It exposes
 Apple Calendar data to MCP clients through a small read surface for listing
 calendars, browsing event ranges, reading event details, searching archived
 events, and building agendas.
 
 This package is developed in the
 [`apple-app-mcp`](https://github.com/wagamama/apple-app-mcp) workspace alongside
-Apple Mail MCP.
+Mac Mail MCP.
 
 ## Quick Start
 
@@ -35,8 +35,6 @@ Add to your MCP client:
 }
 ```
 
-`apple-calendar-mcp` remains available as a compatibility command alias.
-
 ### Build the Search Index (Recommended)
 
 ```bash
@@ -51,8 +49,8 @@ and FTS5 database.
 
 ### Configure (Optional)
 
-Apple Calendar MCP reads settings from environment variables and an optional
-TOML config file at `$HOME/.apple-calendar-mcp/config.toml`.
+Mac Calendar MCP reads settings from environment variables and an optional
+TOML config file at `$HOME/.mac-calendar-mcp/config.toml`.
 
 Common environment variables:
 
@@ -107,7 +105,7 @@ Per-client env overrides via the MCP client's launch config work:
 }
 ```
 
-The default index path is `$HOME/.apple-calendar-mcp/index.db`.
+The default index path is `$HOME/.mac-calendar-mcp/index.db`.
 
 ## CLI Usage
 
@@ -131,8 +129,8 @@ All data commands output JSON where practical.
 git clone https://github.com/wagamama/apple-app-mcp
 cd apple-app-mcp
 uv sync
-uv run ruff check packages/apple-calendar-mcp/src
-uv run --package mac-calendar-mcp pytest packages/apple-calendar-mcp/tests
+uv run ruff check packages/mac-calendar-mcp/src
+uv run --package mac-calendar-mcp pytest packages/mac-calendar-mcp/tests
 uv build --package mac-calendar-mcp
 ```
 

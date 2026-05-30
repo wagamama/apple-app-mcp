@@ -1,5 +1,5 @@
 """
-Apple Mail MCP Server
+Mac Mail MCP Server
 
 3-layer architecture for fast email access:
 1. Disk-first reads — single emails via .emlx parsing (~3ms, no JXA)
@@ -53,7 +53,7 @@ mcp = FastMCP("Apple Mail")
 logger = logging.getLogger(__name__)
 
 # Attachment cache directory
-ATTACHMENT_CACHE_DIR = _Path.home() / ".apple-mail-mcp" / "attachments"
+ATTACHMENT_CACHE_DIR = _Path.home() / ".mac-mail-mcp" / "attachments"
 
 
 def _ensure_writable() -> None:
@@ -728,7 +728,7 @@ async def get_email_attachment(
     """
     Extract a file attachment from an email and save to disk.
 
-    Saves the attachment under ~/.apple-mail-mcp/attachments/.
+    Saves the attachment under ~/.mac-mail-mcp/attachments/.
     Parses the raw MIME structure, so it works for all attachment
     types including inline images and S/MIME signatures.
 

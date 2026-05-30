@@ -1,4 +1,4 @@
-# Contributing to Apple Mail MCP
+# Contributing to Mac Mail MCP
 
 Thanks for your interest in contributing! This guide will help you get started.
 
@@ -26,7 +26,7 @@ Thanks for your interest in contributing! This guide will help you get started.
 ## Project Structure
 
 ```
-src/apple_mail_mcp/
+packages/mac-mail-mcp/src/apple_mail_mcp/
 ├── server.py           # MCP tools (the public API)
 ├── builders.py         # JXA script construction
 ├── executor.py         # osascript execution
@@ -49,8 +49,8 @@ src/apple_mail_mcp/
 
 ### Code Style
 
-- **Formatter**: `uv run ruff format src/`
-- **Linter**: `uv run ruff check src/`
+- **Formatter**: `uv run ruff format packages/mac-mail-mcp/src packages/mac-calendar-mcp/src`
+- **Linter**: `uv run ruff check packages/mac-mail-mcp/src packages/mac-calendar-mcp/src`
 - Line length: 80 characters
 - Type hints required (Python 3.11+ syntax)
 
@@ -59,8 +59,8 @@ src/apple_mail_mcp/
 All changes should include tests. Run the full suite before submitting:
 
 ```bash
-uv run ruff check src/          # Lint
-uv run ruff format --check src/ # Format check
+uv run ruff check packages/mac-mail-mcp/src packages/mac-calendar-mcp/src
+uv run ruff format --check packages/mac-mail-mcp/src packages/mac-calendar-mcp/src
 uv run pytest -v                # Tests
 ```
 

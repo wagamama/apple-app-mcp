@@ -1,16 +1,16 @@
-# Apple Calendar MCP Implementation Plan
+# Mac Calendar MCP Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use
 > superpowers:subagent-driven-development (recommended) or
 > superpowers:executing-plans to implement this plan task-by-task. Steps use
 > checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a separate read-only `apple-calendar-mcp` package and CLI in this
+**Goal:** Add a separate read-only `mac-calendar-mcp` package and CLI in this
 repo, exposing six Calendar MCP read tools backed by a local SQLite + FTS5
 archive index.
 
 **Architecture:** Keep Apple Mail unchanged as the root package and add Apple
-Calendar as a `uv` workspace member under `packages/apple-calendar-mcp`. Calendar
+Calendar as a `uv` workspace member under `packages/mac-calendar-mcp`. Calendar
 uses JXA only for Calendar.app reads, Python for config/index/search/recurrence,
 and FastMCP for the server surface.
 
@@ -22,16 +22,16 @@ and FastMCP for the server surface.
 ## File Structure
 
 - Modify root `pyproject.toml`: add `uv` workspace membership, keep existing
-  `apple-mail-mcp` metadata/script intact, and include Calendar source in
+  `mac-mail-mcp` metadata/script intact, and include Calendar source in
   pytest/ruff paths.
-- Create `packages/apple-calendar-mcp/pyproject.toml`: standalone package
-  metadata and script `apple-calendar-mcp = "apple_calendar_mcp:main"`.
-- Create `packages/apple-calendar-mcp/src/apple_calendar_mcp/`: Calendar
+- Create `packages/mac-calendar-mcp/pyproject.toml`: standalone package
+  metadata and script `mac-calendar-mcp = "apple_calendar_mcp:main"`.
+- Create `packages/mac-calendar-mcp/src/apple_calendar_mcp/`: Calendar
   package with `__init__.py`, `cli.py`, `config.py`, `executor.py`,
   `builders.py`, `recurrence.py`, `server.py`, `py.typed`, `jxa/`, and `index/`.
-- Create `packages/apple-calendar-mcp/tests/`: Calendar-specific tests colocated
+- Create `packages/mac-calendar-mcp/tests/`: Calendar-specific tests colocated
   with the package so they can run via
-  `uv run --package apple-calendar-mcp pytest packages/apple-calendar-mcp/tests`.
+  `uv run --package mac-calendar-mcp pytest packages/mac-calendar-mcp/tests`.
 - Modify `CALENDAR.md`: replace the earlier root `src/apple_calendar_mcp/`
   layout with the workspace member path once the package scaffold exists.
 - Leave `src/apple_mail_mcp/` behavior unchanged.
@@ -40,15 +40,15 @@ and FastMCP for the server surface.
 
 **Files:**
 - Modify: `pyproject.toml`
-- Create: `packages/apple-calendar-mcp/pyproject.toml`
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/__init__.py`
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/py.typed`
-- Create: `packages/apple-calendar-mcp/tests/__init__.py`
-- Create: `packages/apple-calendar-mcp/tests/test_import.py`
+- Create: `packages/mac-calendar-mcp/pyproject.toml`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/__init__.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/py.typed`
+- Create: `packages/mac-calendar-mcp/tests/__init__.py`
+- Create: `packages/mac-calendar-mcp/tests/test_import.py`
 
 - [ ] **Step 1: Write the failing import/script metadata test**
 
-Create `packages/apple-calendar-mcp/tests/test_import.py`:
+Create `packages/mac-calendar-mcp/tests/test_import.py`:
 
 ```python
 from __future__ import annotations
@@ -64,14 +64,14 @@ def test_calendar_package_imports():
 
 
 def test_calendar_distribution_exposes_console_script():
-    dist = importlib.metadata.distribution("apple-calendar-mcp")
+    dist = importlib.metadata.distribution("mac-calendar-mcp")
     scripts = {
         entry.name: entry.value
         for entry in dist.entry_points
         if entry.group == "console_scripts"
     }
 
-    assert scripts["apple-calendar-mcp"] == "apple_calendar_mcp:main"
+    assert scripts["mac-calendar-mcp"] == "apple_calendar_mcp:main"
 ```
 
 - [ ] **Step 2: Run the failing test**
@@ -79,11 +79,11 @@ def test_calendar_distribution_exposes_console_script():
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_import.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_import.py -v
 ```
 
-Expected: FAIL because the `apple-calendar-mcp` workspace package does not
+Expected: FAIL because the `mac-calendar-mcp` workspace package does not
 exist yet.
 
 - [ ] **Step 3: Add workspace metadata**
@@ -92,31 +92,31 @@ Modify root `pyproject.toml`:
 
 ```toml
 [tool.uv.workspace]
-members = ["packages/apple-calendar-mcp"]
+members = ["packages/mac-calendar-mcp"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "packages/apple-calendar-mcp/tests"]
-pythonpath = ["src", "packages/apple-calendar-mcp/src"]
+testpaths = ["tests", "packages/mac-calendar-mcp/tests"]
+pythonpath = ["src", "packages/mac-calendar-mcp/src"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 target-version = "py311"
 line-length = 80
-src = ["src", "packages/apple-calendar-mcp/src"]
+src = ["src", "packages/mac-calendar-mcp/src"]
 ```
 
 Keep existing root project metadata unchanged.
 
 - [ ] **Step 4: Add Calendar package metadata**
 
-Create `packages/apple-calendar-mcp/pyproject.toml`:
+Create `packages/mac-calendar-mcp/pyproject.toml`:
 
 ```toml
 [project]
-name = "apple-calendar-mcp"
+name = "mac-calendar-mcp"
 version = "0.1.0"
-description = "Read-only Apple Calendar MCP server with indexed archive search."
+description = "Read-only Mac Calendar MCP server with indexed archive search."
 readme = "../../CALENDAR.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.11"
@@ -151,7 +151,7 @@ dependencies = [
 ]
 
 [project.scripts]
-apple-calendar-mcp = "apple_calendar_mcp:main"
+mac-calendar-mcp = "apple_calendar_mcp:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/apple_calendar_mcp"]
@@ -169,20 +169,20 @@ build-backend = "hatchling.build"
 
 - [ ] **Step 5: Add minimal package entrypoint**
 
-Create `packages/apple-calendar-mcp/src/apple_calendar_mcp/__init__.py`:
+Create `packages/mac-calendar-mcp/src/apple_calendar_mcp/__init__.py`:
 
 ```python
-"""Apple Calendar MCP - read-only archive search for Apple Calendar."""
+"""Mac Calendar MCP - read-only archive search for Apple Calendar."""
 
 from .cli import main
 
 __all__ = ["main"]
 ```
 
-Create `packages/apple-calendar-mcp/src/apple_calendar_mcp/cli.py`:
+Create `packages/mac-calendar-mcp/src/apple_calendar_mcp/cli.py`:
 
 ```python
-"""Command-line interface for apple-calendar-mcp."""
+"""Command-line interface for mac-calendar-mcp."""
 
 import cyclopts
 
@@ -193,14 +193,14 @@ app = cyclopts.App(
 
 
 def main() -> None:
-    """Run the Apple Calendar MCP CLI."""
+    """Run the Mac Calendar MCP CLI."""
     app()
 ```
 
 Create an empty marker:
 
 ```bash
-touch packages/apple-calendar-mcp/src/apple_calendar_mcp/py.typed
+touch packages/mac-calendar-mcp/src/apple_calendar_mcp/py.typed
 ```
 
 - [ ] **Step 6: Verify import/package test passes**
@@ -208,8 +208,8 @@ touch packages/apple-calendar-mcp/src/apple_calendar_mcp/py.typed
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_import.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_import.py -v
 ```
 
 Expected: PASS.
@@ -231,19 +231,19 @@ True
 - [ ] **Step 8: Commit**
 
 ```bash
-git add pyproject.toml packages/apple-calendar-mcp
-git commit -m "Add Apple Calendar MCP workspace package"
+git add pyproject.toml packages/mac-calendar-mcp
+git commit -m "Add Mac Calendar MCP workspace package"
 ```
 
 ## Task 2: Calendar Config Loader
 
 **Files:**
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/config.py`
-- Create: `packages/apple-calendar-mcp/tests/test_config.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/config.py`
+- Create: `packages/mac-calendar-mcp/tests/test_config.py`
 
 - [ ] **Step 1: Write config tests**
 
-Create `packages/apple-calendar-mcp/tests/test_config.py`:
+Create `packages/mac-calendar-mcp/tests/test_config.py`:
 
 ```python
 from __future__ import annotations
@@ -373,19 +373,19 @@ max_occurrences_per_series = -1
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_config.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_config.py -v
 ```
 
 Expected: FAIL because `apple_calendar_mcp.config` does not exist.
 
 - [ ] **Step 3: Implement config loader**
 
-Create `packages/apple-calendar-mcp/src/apple_calendar_mcp/config.py` with the
+Create `packages/mac-calendar-mcp/src/apple_calendar_mcp/config.py` with the
 same layered model as Mail, but Calendar-specific keys:
 
 ```python
-"""Configuration for Apple Calendar MCP server."""
+"""Configuration for Mac Calendar MCP server."""
 
 from __future__ import annotations
 
@@ -393,8 +393,8 @@ import os
 import tomllib
 from pathlib import Path
 
-DEFAULT_INDEX_PATH = Path.home() / ".apple-calendar-mcp" / "index.db"
-CONFIG_FILE_PATH = Path.home() / ".apple-calendar-mcp" / "config.toml"
+DEFAULT_INDEX_PATH = Path.home() / ".mac-calendar-mcp" / "index.db"
+CONFIG_FILE_PATH = Path.home() / ".mac-calendar-mcp" / "config.toml"
 CONFIG_SCHEMA_VERSION = 1
 
 CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {
@@ -573,8 +573,8 @@ def get_default_calendars() -> list[str] | None:
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_config.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_config.py -v
 ```
 
 Expected: PASS.
@@ -582,20 +582,20 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp/config.py \
-  packages/apple-calendar-mcp/tests/test_config.py
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp/config.py \
+  packages/mac-calendar-mcp/tests/test_config.py
 git commit -m "Add Calendar MCP configuration loader"
 ```
 
 ## Task 3: JXA Executor, Core Script, and Builders
 
 **Files:**
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/executor.py`
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/builders.py`
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/jxa/__init__.py`
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/jxa/calendar_core.js`
-- Create: `packages/apple-calendar-mcp/tests/test_executor.py`
-- Create: `packages/apple-calendar-mcp/tests/test_builders.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/executor.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/builders.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/jxa/__init__.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/jxa/calendar_core.js`
+- Create: `packages/mac-calendar-mcp/tests/test_executor.py`
+- Create: `packages/mac-calendar-mcp/tests/test_builders.py`
 
 - [ ] **Step 1: Write executor tests**
 
@@ -644,7 +644,7 @@ def test_execute_with_core_invalid_json_raises(mock_run):
 
 - [ ] **Step 2: Write builder tests**
 
-Create `packages/apple-calendar-mcp/tests/test_builders.py`:
+Create `packages/mac-calendar-mcp/tests/test_builders.py`:
 
 ```python
 from __future__ import annotations
@@ -682,9 +682,9 @@ def test_events_in_range_requires_start_and_end():
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_executor.py \
-  packages/apple-calendar-mcp/tests/test_builders.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_executor.py \
+  packages/mac-calendar-mcp/tests/test_builders.py -v
 ```
 
 Expected: FAIL because executor/builders/JXA files do not exist.
@@ -928,9 +928,9 @@ class CalendarQueryBuilder:
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_executor.py \
-  packages/apple-calendar-mcp/tests/test_builders.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_executor.py \
+  packages/mac-calendar-mcp/tests/test_builders.py -v
 ```
 
 Expected: PASS.
@@ -938,25 +938,25 @@ Expected: PASS.
 - [ ] **Step 8: Commit**
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp/executor.py \
-  packages/apple-calendar-mcp/src/apple_calendar_mcp/builders.py \
-  packages/apple-calendar-mcp/src/apple_calendar_mcp/jxa \
-  packages/apple-calendar-mcp/tests/test_executor.py \
-  packages/apple-calendar-mcp/tests/test_builders.py
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp/executor.py \
+  packages/mac-calendar-mcp/src/apple_calendar_mcp/builders.py \
+  packages/mac-calendar-mcp/src/apple_calendar_mcp/jxa \
+  packages/mac-calendar-mcp/tests/test_executor.py \
+  packages/mac-calendar-mcp/tests/test_builders.py
 git commit -m "Add Calendar JXA execution layer"
 ```
 
 ## Task 4: Calendar Index Schema
 
 **Files:**
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/index/__init__.py`
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/index/schema.py`
-- Create: `packages/apple-calendar-mcp/tests/test_schema.py`
-- Create/Modify: `packages/apple-calendar-mcp/tests/conftest.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/index/__init__.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/index/schema.py`
+- Create: `packages/mac-calendar-mcp/tests/test_schema.py`
+- Create/Modify: `packages/mac-calendar-mcp/tests/conftest.py`
 
 - [ ] **Step 1: Write schema tests**
 
-Create `packages/apple-calendar-mcp/tests/conftest.py`:
+Create `packages/mac-calendar-mcp/tests/conftest.py`:
 
 ```python
 from __future__ import annotations
@@ -983,7 +983,7 @@ def calendar_db():
     conn.close()
 ```
 
-Create `packages/apple-calendar-mcp/tests/test_schema.py`:
+Create `packages/mac-calendar-mcp/tests/test_schema.py`:
 
 ```python
 from __future__ import annotations
@@ -1072,8 +1072,8 @@ def test_insert_rows_and_search(calendar_db):
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_schema.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_schema.py -v
 ```
 
 Expected: FAIL because `apple_calendar_mcp.index.schema` does not exist.
@@ -1269,8 +1269,8 @@ CREATE TABLE IF NOT EXISTS failed_index_jobs (
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_schema.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_schema.py -v
 ```
 
 Expected: PASS.
@@ -1278,17 +1278,17 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp/index \
-  packages/apple-calendar-mcp/tests/conftest.py \
-  packages/apple-calendar-mcp/tests/test_schema.py
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp/index \
+  packages/mac-calendar-mcp/tests/conftest.py \
+  packages/mac-calendar-mcp/tests/test_schema.py
 git commit -m "Add Calendar index schema"
 ```
 
 ## Task 5: Recurrence Expansion
 
 **Files:**
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/recurrence.py`
-- Create: `packages/apple-calendar-mcp/tests/test_recurrence.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/recurrence.py`
+- Create: `packages/mac-calendar-mcp/tests/test_recurrence.py`
 
 - [ ] **Step 1: Write recurrence tests**
 
@@ -1391,8 +1391,8 @@ def test_unsupported_rule_is_reported():
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_recurrence.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_recurrence.py -v
 ```
 
 Expected: FAIL because `recurrence.py` does not exist.
@@ -1446,8 +1446,8 @@ Rules:
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_recurrence.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_recurrence.py -v
 ```
 
 Expected: PASS.
@@ -1455,18 +1455,18 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp/recurrence.py \
-  packages/apple-calendar-mcp/tests/test_recurrence.py
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp/recurrence.py \
+  packages/mac-calendar-mcp/tests/test_recurrence.py
 git commit -m "Add Calendar recurrence expansion"
 ```
 
 ## Task 6: Index Sync and Search Functions
 
 **Files:**
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/index/sync.py`
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/index/search.py`
-- Create: `packages/apple-calendar-mcp/tests/test_sync.py`
-- Create: `packages/apple-calendar-mcp/tests/test_search.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/index/sync.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/index/search.py`
+- Create: `packages/mac-calendar-mcp/tests/test_sync.py`
+- Create: `packages/mac-calendar-mcp/tests/test_search.py`
 
 - [ ] **Step 1: Write sync tests**
 
@@ -1625,9 +1625,9 @@ def test_search_events_field_filter(calendar_db):
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_sync.py \
-  packages/apple-calendar-mcp/tests/test_search.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_sync.py \
+  packages/mac-calendar-mcp/tests/test_search.py -v
 ```
 
 Expected: FAIL because sync/search functions do not exist.
@@ -1854,9 +1854,9 @@ def search_events(
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_sync.py \
-  packages/apple-calendar-mcp/tests/test_search.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_sync.py \
+  packages/mac-calendar-mcp/tests/test_search.py -v
 ```
 
 Expected: PASS.
@@ -1864,19 +1864,19 @@ Expected: PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp/index/sync.py \
-  packages/apple-calendar-mcp/src/apple_calendar_mcp/index/search.py \
-  packages/apple-calendar-mcp/tests/test_sync.py \
-  packages/apple-calendar-mcp/tests/test_search.py
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp/index/sync.py \
+  packages/mac-calendar-mcp/src/apple_calendar_mcp/index/search.py \
+  packages/mac-calendar-mcp/tests/test_sync.py \
+  packages/mac-calendar-mcp/tests/test_search.py
 git commit -m "Add Calendar index sync and search"
 ```
 
 ## Task 7: IndexManager
 
 **Files:**
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/index/manager.py`
-- Modify: `packages/apple-calendar-mcp/src/apple_calendar_mcp/index/__init__.py`
-- Create: `packages/apple-calendar-mcp/tests/test_manager.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/index/manager.py`
+- Modify: `packages/mac-calendar-mcp/src/apple_calendar_mcp/index/__init__.py`
+- Create: `packages/mac-calendar-mcp/tests/test_manager.py`
 
 - [ ] **Step 1: Write manager tests**
 
@@ -1962,8 +1962,8 @@ def test_manager_search_returns_results(tmp_path):
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_manager.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_manager.py -v
 ```
 
 Expected: FAIL because `manager.py` does not exist.
@@ -2208,8 +2208,8 @@ __all__ = ["IndexManager"]
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_manager.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_manager.py -v
 ```
 
 Expected: PASS.
@@ -2217,17 +2217,17 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp/index/manager.py \
-  packages/apple-calendar-mcp/src/apple_calendar_mcp/index/__init__.py \
-  packages/apple-calendar-mcp/tests/test_manager.py
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp/index/manager.py \
+  packages/mac-calendar-mcp/src/apple_calendar_mcp/index/__init__.py \
+  packages/mac-calendar-mcp/tests/test_manager.py
 git commit -m "Add Calendar index manager"
 ```
 
 ## Task 8: MCP Server Tools and Resource
 
 **Files:**
-- Create: `packages/apple-calendar-mcp/src/apple_calendar_mcp/server.py`
-- Create: `packages/apple-calendar-mcp/tests/test_server.py`
+- Create: `packages/mac-calendar-mcp/src/apple_calendar_mcp/server.py`
+- Create: `packages/mac-calendar-mcp/tests/test_server.py`
 
 - [ ] **Step 1: Write server tests**
 
@@ -2285,8 +2285,8 @@ async def test_search_events_requires_index(monkeypatch):
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_server.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_server.py -v
 ```
 
 Expected: FAIL because `server.py` does not exist.
@@ -2433,8 +2433,8 @@ is not found.
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_server.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_server.py -v
 ```
 
 Expected: PASS.
@@ -2442,17 +2442,17 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp/server.py \
-  packages/apple-calendar-mcp/src/apple_calendar_mcp/index/manager.py \
-  packages/apple-calendar-mcp/tests/test_server.py
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp/server.py \
+  packages/mac-calendar-mcp/src/apple_calendar_mcp/index/manager.py \
+  packages/mac-calendar-mcp/tests/test_server.py
 git commit -m "Add Calendar MCP read tools"
 ```
 
 ## Task 9: Calendar CLI
 
 **Files:**
-- Modify: `packages/apple-calendar-mcp/src/apple_calendar_mcp/cli.py`
-- Create: `packages/apple-calendar-mcp/tests/test_cli.py`
+- Modify: `packages/mac-calendar-mcp/src/apple_calendar_mcp/cli.py`
+- Create: `packages/mac-calendar-mcp/tests/test_cli.py`
 
 - [ ] **Step 1: Write CLI tests**
 
@@ -2491,8 +2491,8 @@ def test_status_no_index_exits(monkeypatch, capsys):
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_cli.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_cli.py -v
 ```
 
 Expected: FAIL because CLI commands are not implemented.
@@ -2571,7 +2571,7 @@ def status(verbose: bool = False) -> None:
         print(f"Expected location: {get_index_path()}")
         sys.exit(1)
     stats = manager.get_stats()
-    print("Apple Calendar MCP Index Status")
+    print("Mac Calendar MCP Index Status")
     print("=" * 40)
     print(f"Location:     {get_index_path()}")
     print(f"Calendars:    {stats.calendar_count:,}")
@@ -2625,8 +2625,8 @@ def main() -> None:
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest \
-  packages/apple-calendar-mcp/tests/test_cli.py -v
+uv run --package mac-calendar-mcp pytest \
+  packages/mac-calendar-mcp/tests/test_cli.py -v
 ```
 
 Expected: PASS.
@@ -2636,7 +2636,7 @@ Expected: PASS.
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp apple-calendar-mcp --help
+uv run --package mac-calendar-mcp mac-calendar-mcp --help
 ```
 
 Expected: command help lists `serve`, `index`, `status`, `rebuild`, `search`,
@@ -2645,8 +2645,8 @@ Expected: command help lists `serve`, `index`, `status`, `rebuild`, `search`,
 - [ ] **Step 6: Commit**
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp/cli.py \
-  packages/apple-calendar-mcp/tests/test_cli.py
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp/cli.py \
+  packages/mac-calendar-mcp/tests/test_cli.py
 git commit -m "Add Calendar MCP CLI"
 ```
 
@@ -2666,7 +2666,7 @@ src/apple_calendar_mcp/
 with:
 
 ```text
-packages/apple-calendar-mcp/src/apple_calendar_mcp/
+packages/mac-calendar-mcp/src/apple_calendar_mcp/
 ```
 
 Keep the same section structure as `MAIL.md`.
@@ -2676,9 +2676,9 @@ Keep the same section structure as `MAIL.md`.
 Ensure the smoke section includes:
 
 ```bash
-uv run --package apple-calendar-mcp pytest packages/apple-calendar-mcp/tests
-uv run --package apple-calendar-mcp apple-calendar-mcp --help
-uv run --package apple-calendar-mcp python -c "from apple_calendar_mcp import main; print(callable(main))"
+uv run --package mac-calendar-mcp pytest packages/mac-calendar-mcp/tests
+uv run --package mac-calendar-mcp mac-calendar-mcp --help
+uv run --package mac-calendar-mcp python -c "from apple_calendar_mcp import main; print(callable(main))"
 ```
 
 - [ ] **Step 3: Run markdown/privacy checks**
@@ -2715,7 +2715,7 @@ git commit -m "Document Calendar MCP implementation layout"
 Run:
 
 ```bash
-uv run --package apple-calendar-mcp pytest packages/apple-calendar-mcp/tests -v
+uv run --package mac-calendar-mcp pytest packages/mac-calendar-mcp/tests -v
 ```
 
 Expected: all Calendar tests pass.
@@ -2736,8 +2736,8 @@ local permissions, capture the exact failures and do not claim full pass.
 Run:
 
 ```bash
-uv run ruff check src packages/apple-calendar-mcp/src packages/apple-calendar-mcp/tests
-uv run ruff format --check src packages/apple-calendar-mcp/src packages/apple-calendar-mcp/tests
+uv run ruff check src packages/mac-calendar-mcp/src packages/mac-calendar-mcp/tests
+uv run ruff format --check src packages/mac-calendar-mcp/src packages/mac-calendar-mcp/tests
 ```
 
 Expected: both commands exit 0.
@@ -2793,8 +2793,8 @@ If verification fixes were required, stage the Calendar package files and
 commit them:
 
 ```bash
-git add packages/apple-calendar-mcp/src/apple_calendar_mcp \
-  packages/apple-calendar-mcp/tests
+git add packages/mac-calendar-mcp/src/apple_calendar_mcp \
+  packages/mac-calendar-mcp/tests
 git commit -m "Stabilize Calendar MCP implementation"
 ```
 
@@ -2803,8 +2803,8 @@ Do not push unless the user explicitly chooses `Commit and push`.
 ## Assumptions and Defaults
 
 - The repo will become a `uv` workspace. Existing Mail packaging remains intact.
-- Calendar is a separate distribution named `apple-calendar-mcp`, not just a
-  second module inside the `apple-mail-mcp` distribution.
+- Calendar is a separate distribution named `mac-calendar-mcp`, not just a
+  second module inside the `mac-mail-mcp` distribution.
 - Calendar v1 is read-only: no create/update/delete/RSVP/UI-opening tools.
 - Calendar v1 is JXA-only. No PyObjC/EventKit dependency is added.
 - No new runtime dependency is required for recurrence; common recurrence rules
