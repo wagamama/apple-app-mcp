@@ -116,6 +116,14 @@ class TestListMailboxes:
 class TestGetEmails:
     """Tests for get_emails() tool."""
 
+    @pytest.fixture(autouse=True)
+    def _disable_envelope_fast_path(self, monkeypatch, tmp_path):
+        """Force these JXA fallback tests away from real Mail.app files."""
+        monkeypatch.setattr(
+            "apple_mail_mcp.index.disk.find_mail_directory",
+            lambda: tmp_path,
+        )
+
     @pytest.mark.asyncio
     @patch("apple_mail_mcp.server.execute_query_async")
     async def test_filter_all_returns_emails(self, mock_exec):
