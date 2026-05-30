@@ -18,7 +18,7 @@ members = [
 [dependency-groups]
 dev = [
     "ruff>=0.14.8",
-    "pytest>=8.0",
+    "pytest>=9.0.3",
     "pytest-cov>=6.0",
     "pytest-asyncio>=0.24",
     "flameprof>=0.4",
@@ -27,7 +27,9 @@ bench = [
     "plotly[kaleido]>=6",
 ]
 docs = [
-    "zensical",
+    "pymdown-extensions>=10.21.3",
+    "pygments>=2.20.0",
+    "zensical==0.0.23",
 ]
 
 [tool.pytest.ini_options]
