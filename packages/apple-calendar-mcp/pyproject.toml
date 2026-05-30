@@ -1,5 +1,5 @@
 [project]
-name = "apple-calendar-mcp"
+name = "mac-calendar-mcp"
 version = "0.1.0"
 description = "Read-only Apple Calendar MCP server with indexed archive search."
 readme = "README.md"
@@ -10,8 +10,10 @@ authors = [
 ]
 keywords = [
     "apple-calendar",
+    "apple-calendar-mcp",
     "calendar",
     "jxa",
+    "mac-calendar-mcp",
     "macos",
     "mcp",
     "model-context-protocol",
@@ -44,7 +46,15 @@ dependencies = [
     "cyclopts>=4.10",
 ]
 
+[project.urls]
+Homepage = "https://github.com/wagamama/apple-app-mcp"
+Documentation = "https://wagamama.github.io/apple-app-mcp/"
+Repository = "https://github.com/wagamama/apple-app-mcp"
+Issues = "https://github.com/wagamama/apple-app-mcp/issues"
+Changelog = "https://github.com/wagamama/apple-app-mcp/blob/main/CHANGELOG.md"
+
 [project.scripts]
+mac-calendar-mcp = "apple_calendar_mcp:main"
 apple-calendar-mcp = "apple_calendar_mcp:main"
 
 [dependency-groups]

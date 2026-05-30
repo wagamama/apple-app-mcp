@@ -1,5 +1,5 @@
 [project]
-name = "apple-mail-mcp"
+name = "mac-mail-mcp"
 version = "0.4.0"
 description = "Apple Mail MCP server with full-coverage FTS5 body search. Reliable on large mailboxes where AppleScript-based servers timeout."
 readme = "README.md"
@@ -12,6 +12,7 @@ keywords = [
     "anthropic",
     "apple-mail",
     "apple-mail-mcp",
+    "mac-mail-mcp",
     "claude",
     "claude-code",
     "claude-desktop",
@@ -59,13 +60,14 @@ dependencies = [
 watch = ["watchfiles>=1.0"]
 
 [project.urls]
-Homepage = "https://github.com/imdinu/apple-mail-mcp"
-Documentation = "https://imdinu.github.io/apple-mail-mcp/"
-Repository = "https://github.com/imdinu/apple-mail-mcp"
-Issues = "https://github.com/imdinu/apple-mail-mcp/issues"
-Changelog = "https://github.com/imdinu/apple-mail-mcp/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/wagamama/apple-app-mcp"
+Documentation = "https://wagamama.github.io/apple-app-mcp/"
+Repository = "https://github.com/wagamama/apple-app-mcp"
+Issues = "https://github.com/wagamama/apple-app-mcp/issues"
+Changelog = "https://github.com/wagamama/apple-app-mcp/blob/main/CHANGELOG.md"
 
 [project.scripts]
+mac-mail-mcp = "apple_mail_mcp:main"
 apple-mail-mcp = "apple_mail_mcp:main"
 
 [tool.hatch.build.targets.wheel]

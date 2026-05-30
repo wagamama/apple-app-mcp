@@ -5,8 +5,8 @@ requires-python = ">=3.11"
 [manifest]
 members = [
     "apple-app-mcp",
-    "apple-calendar-mcp",
-    "apple-mail-mcp",
+    "mac-calendar-mcp",
+    "mac-mail-mcp",
 ]
 
 [[package]]
@@ -81,97 +81,6 @@ docs = [
     { name = "pymdown-extensions", specifier = ">=10.21.3" },
     { name = "zensical", specifier = "==0.0.23" },
 ]
-
-[[package]]
-name = "apple-calendar-mcp"
-version = "0.1.0"
-source = { editable = "packages/apple-calendar-mcp" }
-dependencies = [
-    { name = "authlib" },
-    { name = "cryptography" },
-    { name = "cyclopts" },
-    { name = "fastmcp" },
-    { name = "idna" },
-    { name = "pyjwt" },
-    { name = "python-dotenv" },
-    { name = "python-multipart" },
-    { name = "requests" },
-    { name = "starlette" },
-    { name = "urllib3" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "authlib", specifier = ">=1.6.11" },
-    { name = "cryptography", specifier = ">=46.0.7" },
-    { name = "cyclopts", specifier = ">=4.10" },
-    { name = "fastmcp", specifier = ">=3.2.0,<4" },
-    { name = "idna", specifier = ">=3.15" },
-    { name = "pyjwt", specifier = ">=2.12.0" },
-    { name = "python-dotenv", specifier = ">=1.2.2" },
-    { name = "python-multipart", specifier = ">=0.0.27" },
-    { name = "requests", specifier = ">=2.33.0" },
-    { name = "starlette", specifier = ">=1.0.1" },
-    { name = "urllib3", specifier = ">=2.7.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.0.3" },
-    { name = "pytest-asyncio", specifier = ">=0.24" },
-    { name = "ruff", specifier = ">=0.14.8" },
-]
-
-[[package]]
-name = "apple-mail-mcp"
-version = "0.4.0"
-source = { editable = "packages/apple-mail-mcp" }
-dependencies = [
-    { name = "authlib" },
-    { name = "beautifulsoup4" },
-    { name = "cryptography" },
-    { name = "cyclopts" },
-    { name = "fastmcp" },
-    { name = "idna" },
-    { name = "pyjwt" },
-    { name = "python-dotenv" },
-    { name = "python-multipart" },
-    { name = "requests" },
-    { name = "selectolax" },
-    { name = "starlette" },
-    { name = "urllib3" },
-]
-
-[package.optional-dependencies]
-watch = [
-    { name = "watchfiles" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "authlib", specifier = ">=1.6.11" },
-    { name = "beautifulsoup4", specifier = ">=4.12" },
-    { name = "cryptography", specifier = ">=46.0.7" },
-    { name = "cyclopts", specifier = ">=4.10" },
-    { name = "fastmcp", specifier = ">=3.2.0,<4" },
-    { name = "idna", specifier = ">=3.15" },
-    { name = "pyjwt", specifier = ">=2.12.0" },
-    { name = "python-dotenv", specifier = ">=1.2.2" },
-    { name = "python-multipart", specifier = ">=0.0.27" },
-    { name = "requests", specifier = ">=2.33.0" },
-    { name = "selectolax", specifier = ">=0.4.8" },
-    { name = "starlette", specifier = ">=1.0.1" },
-    { name = "urllib3", specifier = ">=2.7.0" },
-    { name = "watchfiles", marker = "extra == 'watch'", specifier = ">=1.0" },
-]
-provides-extras = ["watch"]
 
 [[package]]
 name = "attrs"
@@ -974,6 +883,97 @@ sdist = { url = "https://files.pythonhosted.org/packages/08/90/bfd7a6fab22bdfafe
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/20/6aa79ba3570bddd1bf7e951c6123f806751e58e8cce736bad77b2cf348d7/logistro-2.0.1-py3-none-any.whl", hash = "sha256:06ffa127b9fb4ac8b1972ae6b2a9d7fde57598bf5939cd708f43ec5bba2d31eb", size = 8555, upload-time = "2025-11-01T02:41:17.587Z" },
 ]
+
+[[package]]
+name = "mac-calendar-mcp"
+version = "0.1.0"
+source = { editable = "packages/apple-calendar-mcp" }
+dependencies = [
+    { name = "authlib" },
+    { name = "cryptography" },
+    { name = "cyclopts" },
+    { name = "fastmcp" },
+    { name = "idna" },
+    { name = "pyjwt" },
+    { name = "python-dotenv" },
+    { name = "python-multipart" },
+    { name = "requests" },
+    { name = "starlette" },
+    { name = "urllib3" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "authlib", specifier = ">=1.6.11" },
+    { name = "cryptography", specifier = ">=46.0.7" },
+    { name = "cyclopts", specifier = ">=4.10" },
+    { name = "fastmcp", specifier = ">=3.2.0,<4" },
+    { name = "idna", specifier = ">=3.15" },
+    { name = "pyjwt", specifier = ">=2.12.0" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "python-multipart", specifier = ">=0.0.27" },
+    { name = "requests", specifier = ">=2.33.0" },
+    { name = "starlette", specifier = ">=1.0.1" },
+    { name = "urllib3", specifier = ">=2.7.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest-asyncio", specifier = ">=0.24" },
+    { name = "ruff", specifier = ">=0.14.8" },
+]
+
+[[package]]
+name = "mac-mail-mcp"
+version = "0.4.0"
+source = { editable = "packages/apple-mail-mcp" }
+dependencies = [
+    { name = "authlib" },
+    { name = "beautifulsoup4" },
+    { name = "cryptography" },
+    { name = "cyclopts" },
+    { name = "fastmcp" },
+    { name = "idna" },
+    { name = "pyjwt" },
+    { name = "python-dotenv" },
+    { name = "python-multipart" },
+    { name = "requests" },
+    { name = "selectolax" },
+    { name = "starlette" },
+    { name = "urllib3" },
+]
+
+[package.optional-dependencies]
+watch = [
+    { name = "watchfiles" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "authlib", specifier = ">=1.6.11" },
+    { name = "beautifulsoup4", specifier = ">=4.12" },
+    { name = "cryptography", specifier = ">=46.0.7" },
+    { name = "cyclopts", specifier = ">=4.10" },
+    { name = "fastmcp", specifier = ">=3.2.0,<4" },
+    { name = "idna", specifier = ">=3.15" },
+    { name = "pyjwt", specifier = ">=2.12.0" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "python-multipart", specifier = ">=0.0.27" },
+    { name = "requests", specifier = ">=2.33.0" },
+    { name = "selectolax", specifier = ">=0.4.8" },
+    { name = "starlette", specifier = ">=1.0.1" },
+    { name = "urllib3", specifier = ">=2.7.0" },
+    { name = "watchfiles", marker = "extra == 'watch'", specifier = ">=1.0" },
+]
+provides-extras = ["watch"]
 
 [[package]]
 name = "markdown"

@@ -10,12 +10,14 @@ def test_calendar_package_imports():
     assert callable(apple_calendar_mcp.main)
 
 
-def test_calendar_distribution_exposes_console_script():
-    dist = importlib.metadata.distribution("apple-calendar-mcp")
+def test_calendar_distribution_exposes_console_scripts():
+    dist = importlib.metadata.distribution("mac-calendar-mcp")
     scripts = {
         entry.name: entry.value
         for entry in dist.entry_points
         if entry.group == "console_scripts"
     }
 
+    assert dist.metadata["Name"] == "mac-calendar-mcp"
+    assert scripts["mac-calendar-mcp"] == "apple_calendar_mcp:main"
     assert scripts["apple-calendar-mcp"] == "apple_calendar_mcp:main"
