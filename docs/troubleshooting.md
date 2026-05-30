@@ -4,7 +4,7 @@ Common issues and their solutions.
 
 ## Full Disk Access
 
-**Symptom:** `apple-mail-mcp index` fails with permission errors, or the index has 0 emails.
+**Symptom:** `mac-mail-mcp index` fails with permission errors, or the index has 0 emails.
 
 **Cause:** The indexer reads `.emlx` files from `~/Library/Mail/V10/`, which macOS protects.
 
@@ -24,7 +24,7 @@ Common issues and their solutions.
 
 **Possible causes:**
 
-1. **No index built yet.** Run `apple-mail-mcp index --verbose` first. Without the index, only JXA-based search is available (limited to a single mailbox).
+1. **No index built yet.** Run `mac-mail-mcp index --verbose` first. Without the index, only JXA-based search is available (limited to a single mailbox).
 
 2. **Too many keywords.** FTS5 uses AND semantics — all terms must match. Use 2–3 specific keywords instead of full sentences.
 
@@ -33,7 +33,7 @@ Common issues and their solutions.
     Good: "quarterly budget"
     ```
 
-3. **Index is stale.** Check with `apple-mail-mcp status`. If the index is old, run `apple-mail-mcp rebuild` or start the server with `--watch` for real-time updates.
+3. **Index is stale.** Check with `mac-mail-mcp status`. If the index is old, run `mac-mail-mcp rebuild` or start the server with `--watch` for real-time updates.
 
 4. **Mailbox excluded.** By default, `Drafts` is excluded from indexing. Check `APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES` (env) or `[index] exclude_mailboxes` in `~/.apple-mail-mcp/config.toml`.
 
@@ -46,7 +46,7 @@ Common issues and their solutions.
 **Fix:** Upgrade to v0.1.6+, which runs sync in a **background thread**. The server starts immediately and search results become available within seconds as the sync completes.
 
 ```bash
-pipx upgrade apple-mail-mcp
+pipx upgrade mac-mail-mcp
 ```
 
 ## Index Rebuild After Upgrade
@@ -58,7 +58,7 @@ pipx upgrade apple-mail-mcp
 **Fix:**
 
 ```bash
-apple-mail-mcp rebuild
+mac-mail-mcp rebuild
 ```
 
 This drops and recreates the index from scratch.
@@ -83,19 +83,19 @@ silently using degraded config.
 - To start over from a clean template, overwrite the file:
 
     ```bash
-    apple-mail-mcp init --force
+    mac-mail-mcp init --force
     ```
 
     This writes a commented template documenting every available key.
 
 - If you see `unsupported config_version`, your config was written
   by a newer version of the server than the one currently installed.
-  Either upgrade `apple-mail-mcp` or hand-edit `config_version` back
+  Either upgrade `mac-mail-mcp` or hand-edit `config_version` back
   to your installed version's schema.
 
 ## Failed Parse Counter ("Failed parse: N (.emlx files in DLQ)")
 
-**Symptom:** `apple-mail-mcp status` shows a non-zero `Failed parse:` line, or the `index://status` MCP resource reports `failed_jobs_count > 0`.
+**Symptom:** `mac-mail-mcp status` shows a non-zero `Failed parse:` line, or the `index://status` MCP resource reports `failed_jobs_count > 0`.
 
 **Cause:** One or more `.emlx` files couldn't be parsed during sync or by the live watcher (corrupt content, unsupported MIME structure, disk read errors, etc.). They're recorded in the DLQ (`failed_index_jobs` table) so operators have visibility into what's missing from the index.
 
@@ -109,7 +109,7 @@ silently using degraded config.
   FROM failed_index_jobs
   ORDER BY last_seen DESC;
   ```
-- **Force a retry** by rebuilding the index: `apple-mail-mcp rebuild`. This re-parses every `.emlx` from disk; entries that succeed are removed from the DLQ.
+- **Force a retry** by rebuilding the index: `mac-mail-mcp rebuild`. This re-parses every `.emlx` from disk; entries that succeed are removed from the DLQ.
 - **DLQ writes themselves failing** (logged at `ERROR` level with `"DLQ write failed"`): indicates a deeper problem — disk full or DB corruption. Check disk space and SQLite integrity (`PRAGMA integrity_check;`).
 
 ## Mail.app Not Running

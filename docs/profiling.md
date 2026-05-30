@@ -11,7 +11,7 @@ by any Python profiling tool.
 
 ## When to profile
 
-- You're seeing slow `apple-mail-mcp index` or `rebuild` runs and want
+- You're seeing slow `mac-mail-mcp index` or `rebuild` runs and want
   to know which layer is the bottleneck (disk walk vs `.emlx` parse vs
   HTML stripping vs SQLite inserts vs FTS5 rebuild).
 - You're filing a perf-related issue and want to give maintainers
@@ -21,12 +21,12 @@ by any Python profiling tool.
   smaller fixture).
 
 If you just want to know *whether* the index is healthy — not how fast
-it builds — use `apple-mail-mcp status` instead.
+it builds — use `mac-mail-mcp status` instead.
 
 ## Capture a profile
 
 ```bash
-apple-mail-mcp index --profile /tmp/sync.prof
+mac-mail-mcp index --profile /tmp/sync.prof
 ```
 
 This runs the full disk-based index build wrapped in `cProfile`. The
@@ -35,7 +35,7 @@ This runs the full disk-based index build wrapped in `cProfile`. The
 The same flag works on `rebuild`:
 
 ```bash
-apple-mail-mcp rebuild --profile /tmp/rebuild.prof
+mac-mail-mcp rebuild --profile /tmp/rebuild.prof
 ```
 
 The flag adds measurable overhead (typically 5-10% of wall-clock for
@@ -168,7 +168,7 @@ breakdown*, not just *what is the largest line*. Some patterns:
 
 ## What this project knows so far
 
-A reference profile of `apple-mail-mcp index` on a real ~60k-message
+A reference profile of `mac-mail-mcp index` on a real ~60k-message
 mailbox (M1 Pro, internal SSD, macOS 26.4):
 
 ![Reference flame chart from a 60k-message index run](img/profile_flame_example.png)

@@ -68,7 +68,7 @@ def _ensure_writable() -> None:
         raise PermissionError(
             "Server is in read-only mode "
             "(APPLE_MAIL_READ_ONLY=true, [server] read_only = true, "
-            "or `apple-mail-mcp serve -r`)."
+            "or `mac-mail-mcp serve -r`)."
         )
 
 
@@ -556,7 +556,7 @@ async def get_email(
             )
         raise ValueError(
             f"Message {message_id} was deleted or moved since the last "
-            f"index sync. Run 'apple-mail-mcp rebuild' to refresh "
+            f"index sync. Run 'mac-mail-mcp rebuild' to refresh "
             f"the index."
         )
 
@@ -622,7 +622,7 @@ async def get_email(
             hint = (
                 "The email may have been deleted or moved, "
                 "or the mailbox is too large for JXA to scan. "
-                "Try 'apple-mail-mcp rebuild' to refresh the index."
+                "Try 'mac-mail-mcp rebuild' to refresh the index."
             )
         elif account or mailbox:
             hint = (
@@ -667,7 +667,7 @@ async def _resolve_emlx_path(
     """
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No search index. Run 'apple-mail-mcp index'.")
+        raise ValueError("No search index. Run 'mac-mail-mcp index'.")
 
     idx_acct = None
     if account:
@@ -971,7 +971,7 @@ async def search(
                 err_msg = str(e) or repr(e)
                 raise RuntimeError(
                     f"Search index error: {err_msg}. "
-                    f"Try 'apple-mail-mcp rebuild' if this persists."
+                    f"Try 'mac-mail-mcp rebuild' if this persists."
                 ) from e
             return _maybe_hint(
                 [
@@ -998,7 +998,7 @@ async def search(
     if before or after:
         raise ValueError(
             "Date filtering (before/after) requires the search "
-            "index. Run 'apple-mail-mcp index' to build it."
+            "index. Run 'mac-mail-mcp index' to build it."
         )
 
     # JXA-based search for subject/sender or when no index
@@ -1068,7 +1068,7 @@ async def index_status() -> str:
             {
                 "has_index": False,
                 "message": (
-                    "No index found. Run 'apple-mail-mcp index' to build it."
+                    "No index found. Run 'mac-mail-mcp index' to build it."
                 ),
             }
         )

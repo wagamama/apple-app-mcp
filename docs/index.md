@@ -28,10 +28,10 @@ Tested against [6 other Apple Mail MCP servers](benchmarks.md) on a real ~73K-me
 
 ```bash
 # No install required — run directly
-pipx run apple-mail-mcp
+pipx run mac-mail-mcp
 
 # Or install globally
-pipx install apple-mail-mcp
+pipx install mac-mail-mcp
 ```
 
 ## Claude Desktop Setup
@@ -40,7 +40,7 @@ pipx install apple-mail-mcp
 {
   "mcpServers": {
     "mail": {
-      "command": "apple-mail-mcp"
+      "command": "mac-mail-mcp"
     }
   }
 }
@@ -53,15 +53,15 @@ That's it. Ask Claude to search your emails, get today's messages, or find unrea
 All tools also work as standalone CLI commands:
 
 ```bash
-apple-mail-mcp search "quarterly report" --after 2026-01-01
-apple-mail-mcp read 12345
-apple-mail-mcp emails --filter unread --limit 10
+mac-mail-mcp search "quarterly report" --after 2026-01-01
+mac-mail-mcp read 12345
+mac-mail-mcp emails --filter unread --limit 10
 ```
 
 Generate a Claude Code skill for CLI-based access:
 
 ```bash
-apple-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
+mac-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
 ```
 
 ## Next Steps

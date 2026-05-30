@@ -15,7 +15,7 @@ Apple Mail MCP includes an optional **FTS5 search index** that makes body search
                               Fast search (~2ms)
 ```
 
-1. **Build from disk** — `apple-mail-mcp index` reads `.emlx` files directly (~30x faster than JXA)
+1. **Build from disk** — `mac-mail-mcp index` reads `.emlx` files directly (~30x faster than JXA)
 2. **Startup sync** — index is reconciled with disk when the server starts (<5s)
 3. **Real-time updates** — `--watch` flag monitors for new emails
 4. **Fast search** — queries use SQLite FTS5 with BM25 ranking
@@ -38,13 +38,13 @@ Building requires **Full Disk Access** for your terminal:
 
 ```bash
 # Build the index (first time)
-apple-mail-mcp index --verbose
+mac-mail-mcp index --verbose
 
 # Check index status
-apple-mail-mcp status
+mac-mail-mcp status
 
 # Force rebuild from scratch
-apple-mail-mcp rebuild
+mac-mail-mcp rebuild
 ```
 
 ### What Gets Indexed
@@ -142,7 +142,7 @@ CREATE TABLE failed_index_jobs (
 
 Files that fail to parse during sync or live watching aren't silently dropped — they land in `failed_index_jobs` (above). The schema captures error type, message, and first/last seen timestamps so operators can audit which messages are missing from the index.
 
-- **View counts**: `apple-mail-mcp status` displays `Failed parse: N (.emlx files in DLQ)` when N > 0. Same number is exposed via the `index://status` MCP resource as `failed_jobs_count`.
+- **View counts**: `mac-mail-mcp status` displays `Failed parse: N (.emlx files in DLQ)` when N > 0. Same number is exposed via the `index://status` MCP resource as `failed_jobs_count`.
 - **Self-healing**: a successful re-parse of the same path automatically clears the DLQ entry. So transient causes (Mail.app mid-write, permissions glitches) resolve on the next watcher tick without operator intervention.
 - **Failure of the DLQ itself** (disk full, DB corrupted): logged at `ERROR` level rather than swallowed. Look for `"DLQ write failed"` in logs.
 
@@ -171,7 +171,7 @@ This takes **<5s** even for 20,000+ emails (vs. 60s+ timeout with the old JXA-ba
 Enable automatic index updates with the `--watch` flag:
 
 ```bash
-apple-mail-mcp --watch
+mac-mail-mcp --watch
 ```
 
 The file watcher monitors `~/Library/Mail/V10/` for:

@@ -41,7 +41,7 @@ async def get_events(
 ) -> list[dict]:
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No calendar index. Run 'apple-calendar-mcp index'.")
+        raise ValueError("No calendar index. Run 'mac-calendar-mcp index'.")
     return manager.events(
         start=start,
         end=end,
@@ -58,7 +58,7 @@ async def get_event(
 ) -> dict:
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No calendar index. Run 'apple-calendar-mcp index'.")
+        raise ValueError("No calendar index. Run 'mac-calendar-mcp index'.")
     return await asyncio.to_thread(
         manager.get_event,
         event_id,
@@ -88,7 +88,7 @@ async def search_events(
 ) -> list[dict]:
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No calendar index. Run 'apple-calendar-mcp index'.")
+        raise ValueError("No calendar index. Run 'mac-calendar-mcp index'.")
     return manager.search(
         query,
         start=start,
@@ -108,7 +108,7 @@ async def get_agenda(
 ) -> list[dict]:
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No calendar index. Run 'apple-calendar-mcp index'.")
+        raise ValueError("No calendar index. Run 'mac-calendar-mcp index'.")
     return await asyncio.to_thread(
         manager.get_agenda,
         start=start,

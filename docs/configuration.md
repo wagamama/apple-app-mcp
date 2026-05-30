@@ -10,7 +10,7 @@ started.
 Generate a commented config file:
 
 ```bash
-apple-mail-mcp init
+mac-mail-mcp init
 ```
 
 This writes `~/.apple-mail-mcp/config.toml` with every available key
@@ -70,7 +70,7 @@ in CI or in MCP client launch configs.
 When the same value is set in multiple places, the highest-precedence
 source wins. From highest to lowest:
 
-1. **CLI flags** (e.g. `apple-mail-mcp serve -r`)
+1. **CLI flags** (e.g. `mac-mail-mcp serve -r`)
 2. **Environment variables** (`APPLE_MAIL_*`)
 3. **TOML config file** (`~/.apple-mail-mcp/config.toml`)
 4. **Built-in defaults**
@@ -88,12 +88,12 @@ index size on machines with many large mailboxes:
 
 ```bash
 export APPLE_MAIL_INDEX_MAX_EMAILS=10000
-apple-mail-mcp rebuild
+mac-mail-mcp rebuild
 ```
 
 When a cap is set and a mailbox exceeds it, the most recent emails by
-file modification time are kept. `apple-mail-mcp rebuild` reports how
-many mailboxes hit the cap, and `apple-mail-mcp status` surfaces the
+file modification time are kept. `mac-mail-mcp rebuild` reports how
+many mailboxes hit the cap, and `mac-mail-mcp status` surfaces the
 same information after the fact.
 
 ## Read-only mode
@@ -103,14 +103,14 @@ operations. This can also be set via the `APPLE_MAIL_READ_ONLY`
 environment variable or `[server] read_only = true` in `config.toml`.
 
 ```bash
-apple-mail-mcp serve --read-only
+mac-mail-mcp serve --read-only
 ```
 
 Or via environment variable:
 
 ```bash
 export APPLE_MAIL_READ_ONLY=true
-apple-mail-mcp serve
+mac-mail-mcp serve
 ```
 
 When read-only mode is active, write-capable MCP tools raise
@@ -132,7 +132,7 @@ path = "/path/to/custom/index.db"
 
 The database file is created with `0600` permissions (owner read/write
 only) for security. The same posture applies to `config.toml` (created
-by `apple-mail-mcp init`) and the attachment cache.
+by `mac-mail-mcp init`) and the attachment cache.
 
 ## MCP client configuration
 
@@ -144,7 +144,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "mail": {
-      "command": "apple-mail-mcp",
+      "command": "mac-mail-mcp",
       "env": {
         "APPLE_MAIL_DEFAULT_ACCOUNT": "Work",
         "APPLE_MAIL_DEFAULT_MAILBOX": "INBOX"
@@ -166,7 +166,7 @@ Edit `.mcp.json` in your project root or `~/.claude/mcp.json` globally:
 {
   "mcpServers": {
     "mail": {
-      "command": "apple-mail-mcp",
+      "command": "mac-mail-mcp",
       "env": {
         "APPLE_MAIL_DEFAULT_ACCOUNT": "Work"
       }
@@ -183,7 +183,7 @@ To keep the search index automatically updated:
 {
   "mcpServers": {
     "mail": {
-      "command": "apple-mail-mcp",
+      "command": "mac-mail-mcp",
       "args": ["--watch"],
       "env": {
         "APPLE_MAIL_DEFAULT_ACCOUNT": "Work"
@@ -196,19 +196,19 @@ To keep the search index automatically updated:
 ## CLI commands
 
 ```bash
-apple-mail-mcp              # Run MCP server (default)
-apple-mail-mcp serve        # Run MCP server explicitly
-apple-mail-mcp serve -r     # Run in read-only mode
-apple-mail-mcp --watch      # Run with real-time index updates
-apple-mail-mcp init         # Write a config.toml template
-apple-mail-mcp index        # Build search index from disk
-apple-mail-mcp status       # Show index statistics
-apple-mail-mcp rebuild      # Force rebuild index
-apple-mail-mcp search       # Search emails (JSON output)
-apple-mail-mcp read         # Read a single email (JSON output)
-apple-mail-mcp emails       # List emails (JSON output)
-apple-mail-mcp accounts     # List accounts (JSON output)
-apple-mail-mcp mailboxes    # List mailboxes (JSON output)
-apple-mail-mcp extract      # Extract attachment (JSON output)
-apple-mail-mcp integrate claude  # Generate a Claude Code skill file
+mac-mail-mcp              # Run MCP server (default)
+mac-mail-mcp serve        # Run MCP server explicitly
+mac-mail-mcp serve -r     # Run in read-only mode
+mac-mail-mcp --watch      # Run with real-time index updates
+mac-mail-mcp init         # Write a config.toml template
+mac-mail-mcp index        # Build search index from disk
+mac-mail-mcp status       # Show index statistics
+mac-mail-mcp rebuild      # Force rebuild index
+mac-mail-mcp search       # Search emails (JSON output)
+mac-mail-mcp read         # Read a single email (JSON output)
+mac-mail-mcp emails       # List emails (JSON output)
+mac-mail-mcp accounts     # List accounts (JSON output)
+mac-mail-mcp mailboxes    # List mailboxes (JSON output)
+mac-mail-mcp extract      # Extract attachment (JSON output)
+mac-mail-mcp integrate claude  # Generate a Claude Code skill file
 ```

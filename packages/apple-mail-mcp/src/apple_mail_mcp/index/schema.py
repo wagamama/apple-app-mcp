@@ -353,7 +353,7 @@ def _run_migrations(
         # changing primary keys
         logger.warning(
             "Schema migration v1→v2 requires rebuild. "
-            "Run 'apple-mail-mcp rebuild' to re-index."
+            "Run 'mac-mail-mcp rebuild' to re-index."
         )
 
         # Drop old tables and recreate
@@ -379,7 +379,7 @@ def _run_migrations(
         )
 
         logger.info(
-            "Migration v2→v3 complete. Run 'apple-mail-mcp rebuild' "
+            "Migration v2→v3 complete. Run 'mac-mail-mcp rebuild' "
             "to populate emlx_path for existing emails."
         )
 
@@ -414,7 +414,7 @@ def _run_migrations(
 
         print(
             "\n⚠ Upgraded to schema v4 (attachment support).\n"
-            "  Run 'apple-mail-mcp rebuild' to populate attachment\n"
+            "  Run 'mac-mail-mcp rebuild' to populate attachment\n"
             "  metadata for existing emails. Without this, attachment\n"
             "  search and get_attachment will only work for newly\n"
             "  indexed emails.\n",

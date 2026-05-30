@@ -18,7 +18,7 @@ CONFIG_FILE_PATH = Path.home() / ".apple-mail-mcp" / "config.toml"
 CONFIG_SCHEMA_VERSION = 1
 
 # Single source of truth for what the TOML file may contain. Used by the
-# loader for validation and by `apple-mail-mcp init` to generate the template.
+# loader for validation and by `mac-mail-mcp init` to generate the template.
 # Maps `(section, key)` -> tuple of accepted Python types.
 CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {
     "defaults": {
@@ -287,7 +287,7 @@ def get_read_only_mode() -> bool:
     Check if write operations are disabled.
 
     Resolution: programmatic flag (set via :func:`set_read_only_mode`, e.g.
-    by ``apple-mail-mcp serve -r``), then ``APPLE_MAIL_READ_ONLY`` env, then
+    by ``mac-mail-mcp serve -r``), then ``APPLE_MAIL_READ_ONLY`` env, then
     ``[server] read_only`` in ``config.toml``, then ``False``.
     """
     if _read_only_mode:
@@ -307,16 +307,16 @@ def set_read_only_mode(value: bool) -> None:
     _read_only_mode = value
 
 
-# Template emitted by `apple-mail-mcp init`. Every key is commented out so
+# Template emitted by `mac-mail-mcp init`. Every key is commented out so
 # the file is documentation that happens to be machine-readable: a new user
 # sees the full surface and the matching env-var name on each line, then
 # uncomments what they want. Forward-compat keys for #89 are included.
 CONFIG_TEMPLATE = """\
 # Apple Mail MCP — configuration
-# https://github.com/imdinu/apple-mail-mcp
+# https://github.com/wagamama/apple-app-mcp
 #
 # Resolution order (highest precedence first):
-#   1. CLI flags  (e.g. `apple-mail-mcp serve -r`)
+#   1. CLI flags  (e.g. `mac-mail-mcp serve -r`)
 #   2. Environment variables  (APPLE_MAIL_*)
 #   3. This file
 #   4. Built-in defaults
@@ -362,6 +362,6 @@ config_version = 1
 
 # Disable write operations at MCP tool boundaries.
 # Env: APPLE_MAIL_READ_ONLY
-# CLI: apple-mail-mcp serve -r
+# CLI: mac-mail-mcp serve -r
 # read_only = false
 """

@@ -1179,7 +1179,7 @@ class TestIndexStatusResource:
         data = json.loads(result)
 
         assert data["has_index"] is False
-        assert "apple-mail-mcp index" in data["message"]
+        assert "mac-mail-mcp index" in data["message"]
 
     @pytest.mark.asyncio
     @patch("apple_mail_mcp.server._get_index_manager")

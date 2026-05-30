@@ -20,7 +20,7 @@ Get Apple Mail MCP running with Claude in under 2 minutes.
       "mcpServers": {
         "mail": {
           "command": "pipx",
-          "args": ["run", "apple-mail-mcp"]
+          "args": ["run", "mac-mail-mcp"]
         }
       }
     }
@@ -34,7 +34,7 @@ Get Apple Mail MCP running with Claude in under 2 minutes.
     {
       "mcpServers": {
         "mail": {
-          "command": "apple-mail-mcp"
+          "command": "mac-mail-mcp"
         }
       }
     }
@@ -56,7 +56,7 @@ The indexer reads `.emlx` files directly from `~/Library/Mail/V10/`, which requi
 ### Build the Index
 
 ```bash
-apple-mail-mcp index --verbose
+mac-mail-mcp index --verbose
 # → Indexed 22,696 emails in 1m 7.6s
 # → Database size: 130.5 MB
 ```
@@ -78,7 +78,7 @@ Once configured, talk to Claude naturally:
 Keep the index automatically up-to-date as new emails arrive:
 
 ```bash
-apple-mail-mcp --watch
+mac-mail-mcp --watch
 ```
 
 This monitors `~/Library/Mail/V10/` for new `.emlx` files and indexes them in real-time.
@@ -88,15 +88,15 @@ This monitors `~/Library/Mail/V10/` for new `.emlx` files and indexes them in re
 Don't need an MCP server? Use the CLI directly:
 
 ```bash
-apple-mail-mcp search "quarterly report" --after 2026-01-01
-apple-mail-mcp read 12345
-apple-mail-mcp emails --filter unread --limit 10
+mac-mail-mcp search "quarterly report" --after 2026-01-01
+mac-mail-mcp read 12345
+mac-mail-mcp emails --filter unread --limit 10
 ```
 
 Generate a Claude Code skill for CLI-based access:
 
 ```bash
-apple-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
+mac-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
 ```
 
 See [Configuration](configuration.md#cli-commands) for the full command list.

@@ -187,7 +187,7 @@ Create `packages/apple-calendar-mcp/src/apple_calendar_mcp/cli.py`:
 import cyclopts
 
 app = cyclopts.App(
-    name="apple-calendar-mcp",
+    name="mac-calendar-mcp",
     help="Read-only MCP server for Apple Calendar with indexed search.",
 )
 
@@ -2338,7 +2338,7 @@ async def get_events(
 ) -> list[dict]:
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No calendar index. Run 'apple-calendar-mcp index'.")
+        raise ValueError("No calendar index. Run 'mac-calendar-mcp index'.")
     results = manager.events(
         start=start,
         end=end,
@@ -2356,7 +2356,7 @@ async def get_event(
 ) -> dict:
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No calendar index. Run 'apple-calendar-mcp index'.")
+        raise ValueError("No calendar index. Run 'mac-calendar-mcp index'.")
     return await asyncio.to_thread(
         manager.get_event,
         event_id,
@@ -2378,7 +2378,7 @@ async def search_events(
     ) -> list[dict]:
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No calendar index. Run 'apple-calendar-mcp index'.")
+        raise ValueError("No calendar index. Run 'mac-calendar-mcp index'.")
     return manager.search(
         query,
         start=start,
@@ -2398,7 +2398,7 @@ async def get_agenda(
 ) -> list[dict]:
     manager = _get_index_manager()
     if not manager.has_index():
-        raise ValueError("No calendar index. Run 'apple-calendar-mcp index'.")
+        raise ValueError("No calendar index. Run 'mac-calendar-mcp index'.")
     return await asyncio.to_thread(
         manager.get_agenda,
         start=start,
@@ -2515,7 +2515,7 @@ from .config import get_index_path
 from .index import IndexManager
 
 app = cyclopts.App(
-    name="apple-calendar-mcp",
+    name="mac-calendar-mcp",
     help="Read-only MCP server for Apple Calendar with indexed search.",
 )
 
@@ -2591,7 +2591,7 @@ def rebuild(verbose: bool = False) -> None:
 def search(query: str, limit: int = 20, offset: int = 0) -> None:
     manager = IndexManager()
     if not manager.has_index():
-        print("No index found. Run 'apple-calendar-mcp index'.", file=sys.stderr)
+        print("No index found. Run 'mac-calendar-mcp index'.", file=sys.stderr)
         sys.exit(1)
     _print_json(manager.search(query, limit=limit, offset=offset))
 
@@ -2747,8 +2747,8 @@ Expected: both commands exit 0.
 Run:
 
 ```bash
-uv build --package apple-mail-mcp
-uv build --package apple-calendar-mcp
+uv build --package mac-mail-mcp
+uv build --package mac-calendar-mcp
 ```
 
 Expected: both builds complete and produce artifacts under `dist/`.
@@ -2758,8 +2758,8 @@ Expected: both builds complete and produce artifacts under `dist/`.
 Run:
 
 ```bash
-uv run --package apple-mail-mcp apple-mail-mcp --help
-uv run --package apple-calendar-mcp apple-calendar-mcp --help
+uv run --package mac-mail-mcp mac-mail-mcp --help
+uv run --package mac-calendar-mcp mac-calendar-mcp --help
 ```
 
 Expected: both commands print help and exit 0.

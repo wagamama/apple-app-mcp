@@ -33,7 +33,7 @@ But "completes the operation" isn't the same as "covers the full mailbox." Basti
 
 | # | Project | Type | Notes |
 |---|---------|------|-------|
-| 1 | **[imdinu/apple-mail-mcp](https://github.com/imdinu/apple-mail-mcp)** (ours) | Python | Disk-first `.emlx` + batch JXA + FTS5 over the full mailbox |
+| 1 | **[wagamama/apple-app-mcp](https://github.com/wagamama/apple-app-mcp)** (ours) | Python | Disk-first `.emlx` + batch JXA + FTS5 over the full mailbox |
 | 2 | **[BastianZim/apple-mail-mcp](https://github.com/BastianZim/apple-mail-mcp)** | Python | Reads Apple's Envelope Index directly; live `.emlx` body scan **capped at 5000 most recent messages** |
 | 3 | **[rusty_apple_mail_mcp](https://github.com/like-a-freedom/rusty_apple_mail_mcp)** | Rust | Reads Apple's Envelope Index directly; no body search |
 | 4 | **[pl-lyfx/apple-mail-mcp](https://github.com/pl-lyfx/apple-mail-mcp)** | Python | Single-file, reads Apple's Envelope Index directly; no `get_emails`-list or `get_email`-by-id surface, and no real body search either — their `mail_search` is misleadingly named (see below) |
@@ -126,7 +126,7 @@ FTS5 column filtering gives us ~10ms subject search, competitive with rusty's di
 ## Caveats
 
 1. **Mailbox size matters.** Results depend on the number of emails. Our test mailbox has ~73,400 messages — AppleScript-based servers struggle at this scale.
-2. **FTS5 requires one-time indexing.** Body and subject search require `apple-mail-mcp index` first. Cold start time does not include indexing.
+2. **FTS5 requires one-time indexing.** Body and subject search require `mac-mail-mcp index` first. Cold start time does not include indexing.
 3. **Not all servers support all operations.** The capability matrix above shows which operations each server supports.
 4. **Capped competitors are flagged, not run.** BastianZim's body search is fast but covers only the 5000 most recent messages on this mailbox — we mark its `search_body` cell as "5K cap" in the matrix and omit it from the body-search bar chart entirely. Including the bar would imply apples-to-apples comparison.
 5. **macOS and Mail.app versions matter.** Performance varies across OS versions, and some AppleScript paths break entirely between releases. The previously-benchmarked smorgan project (78⭐) is non-functional on macOS 26: both `get_emails` and `search_subject` raise `Illegal comparison or logical (-1726)` and an enumeration error against the Inbox, where both worked on macOS 25. Demoted to "Also noted" until upstream updates the AppleScript idioms for the new Mail.app object model.
@@ -150,4 +150,4 @@ uv run --group bench python -m benchmarks.run --competitor imdinu
 uv run --group bench python -m benchmarks.run --scenario cold_start
 ```
 
-See the [benchmarks suite](https://github.com/imdinu/apple-mail-mcp/tree/main/benchmarks) in the repository for harness code and competitor configs.
+See the [benchmarks suite](https://github.com/wagamama/apple-app-mcp/tree/main/benchmarks) in the repository for harness code and competitor configs.

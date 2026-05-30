@@ -1,4 +1,4 @@
-"""Command-line interface for apple-mail-mcp.
+"""Command-line interface for mac-mail-mcp.
 
 Provides commands for:
 - serve:   Run the MCP server (default)
@@ -8,13 +8,13 @@ Provides commands for:
 - rebuild: Force rebuild the index
 
 Usage:
-    apple-mail-mcp            # Run MCP server (default)
-    apple-mail-mcp serve      # Run MCP server explicitly
-    apple-mail-mcp --watch    # Run with real-time index updates
-    apple-mail-mcp init       # Write config.toml template
-    apple-mail-mcp index      # Build index from disk
-    apple-mail-mcp status     # Show index status
-    apple-mail-mcp rebuild    # Force rebuild index
+    mac-mail-mcp            # Run MCP server (default)
+    mac-mail-mcp serve      # Run MCP server explicitly
+    mac-mail-mcp --watch    # Run with real-time index updates
+    mac-mail-mcp init       # Write config.toml template
+    mac-mail-mcp index      # Build index from disk
+    mac-mail-mcp status     # Show index status
+    mac-mail-mcp rebuild    # Force rebuild index
 """
 
 import sys
@@ -53,7 +53,7 @@ def _run_optionally_profiled(
 
 
 app = cyclopts.App(
-    name="apple-mail-mcp",
+    name="mac-mail-mcp",
     help="Fast MCP server for Apple Mail with FTS5 search index.",
 )
 
@@ -312,7 +312,7 @@ def status(
         print("No index found.")
         print(f"Expected location: {get_index_path()}")
         print()
-        print("Run 'apple-mail-mcp index' to build the index.")
+        print("Run 'mac-mail-mcp index' to build the index.")
         sys.exit(1)
 
     stats = manager.get_stats()
@@ -356,13 +356,11 @@ def status(
 
             if manager.is_stale():
                 print()
-                print(
-                    "⚠ Index is stale. Run 'apple-mail-mcp index' to refresh."
-                )
+                print("⚠ Index is stale. Run 'mac-mail-mcp index' to refresh.")
     else:
         print("Last sync:    Never")
         print()
-        print("⚠ No sync recorded. Run 'apple-mail-mcp index' to build.")
+        print("⚠ No sync recorded. Run 'mac-mail-mcp index' to build.")
 
 
 @app.command
@@ -520,12 +518,12 @@ name: mail
 description: Search and read Apple Mail emails via CLI
 ---
 
-Use `apple-mail-mcp` CLI to access emails on this Mac.
+Use `mac-mail-mcp` CLI to access emails on this Mac.
 
 ## Search emails
 
 ```
-!apple-mail-mcp search "keyword" --limit 20
+!mac-mail-mcp search "keyword" --limit 20
 ```
 
 Options:
@@ -538,15 +536,15 @@ Options:
 
 Examples:
 ```
-!apple-mail-mcp search "quarterly report" --scope subject
-!apple-mail-mcp search "invoice" --after 2026-01-01 --before 2026-04-01
-!apple-mail-mcp search "Kim Foulds" --account Work
+!mac-mail-mcp search "quarterly report" --scope subject
+!mac-mail-mcp search "invoice" --after 2026-01-01 --before 2026-04-01
+!mac-mail-mcp search "Kim Foulds" --account Work
 ```
 
 ## Read full email
 
 ```
-!apple-mail-mcp read <message_id>
+!mac-mail-mcp read <message_id>
 ```
 
 Use the `id` from search results. Returns full content, attachments list, \
@@ -555,7 +553,7 @@ and metadata.
 ## List emails
 
 ```
-!apple-mail-mcp emails --filter unread --limit 10
+!mac-mail-mcp emails --filter unread --limit 10
 ```
 
 Filters: all, unread, flagged, today, last_7_days
@@ -563,22 +561,22 @@ Filters: all, unread, flagged, today, last_7_days
 ## List accounts and mailboxes
 
 ```
-!apple-mail-mcp accounts
-!apple-mail-mcp mailboxes --account Work
+!mac-mail-mcp accounts
+!mac-mail-mcp mailboxes --account Work
 ```
 
 ## Extract attachment or links
 
 ```
-!apple-mail-mcp extract <message_id> <filename>
-!apple-mail-mcp extract <message_id>  # links mode
+!mac-mail-mcp extract <message_id> <filename>
+!mac-mail-mcp extract <message_id>  # links mode
 ```
 
 ## Output format
 
 All commands return JSON. Use jq for filtering:
 ```
-!apple-mail-mcp search "budget" | jq '.[].subject'
+!mac-mail-mcp search "budget" | jq '.[].subject'
 ```
 """
 
@@ -589,7 +587,7 @@ def claude() -> None:
 
     Outputs markdown to stdout. Pipe to a file:
 
-        apple-mail-mcp integrate claude \\
+        mac-mail-mcp integrate claude \\
             > ~/.claude/skills/apple-mail.md
     """
     print(_CLAUDE_SKILL)

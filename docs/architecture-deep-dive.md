@@ -292,7 +292,7 @@ All four strategies return an **identical response schema** — the caller never
 The index stays current through **state reconciliation** — comparing the filesystem against the database to find what changed:
 
 ```
-Server startup / apple-mail-mcp index
+Server startup / mac-mail-mcp index
   → get_disk_inventory()     # Walk ~/Library/Mail/V10/, extract (account, mailbox, id) from paths
   → get_db_inventory()       # Query SQLite for existing (account, mailbox, id, path) tuples
   → Calculate diff:

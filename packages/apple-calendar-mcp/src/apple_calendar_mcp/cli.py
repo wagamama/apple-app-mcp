@@ -1,4 +1,4 @@
-"""Command-line interface for apple-calendar-mcp."""
+"""Command-line interface for mac-calendar-mcp."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .config import get_index_path
 from .index import IndexManager
 
 app = cyclopts.App(
-    name="apple-calendar-mcp",
+    name="mac-calendar-mcp",
     help="Read-only MCP server for Apple Calendar with indexed search.",
 )
 
@@ -91,9 +91,7 @@ def rebuild(verbose: bool = False) -> None:
 def search(query: str, limit: int = 20, offset: int = 0) -> None:
     manager = IndexManager()
     if not manager.has_index():
-        print(
-            "No index found. Run 'apple-calendar-mcp index'.", file=sys.stderr
-        )
+        print("No index found. Run 'mac-calendar-mcp index'.", file=sys.stderr)
         sys.exit(1)
     _print_json(manager.search(query, limit=limit, offset=offset))
 

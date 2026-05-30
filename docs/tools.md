@@ -227,7 +227,7 @@ get_email_attachment(12345, "invoice.pdf")
 ```
 
 !!! note
-    Requires the FTS5 search index. If upgrading from v0.1.x, run `apple-mail-mcp rebuild` to populate attachment metadata.
+    Requires the FTS5 search index. If upgrading from v0.1.x, run `mac-mail-mcp rebuild` to populate attachment metadata.
 
 ---
 
@@ -270,6 +270,6 @@ Read-only JSON snapshot of FTS5 search-index health. Lets clients render an "ind
 ```json
 {
   "has_index": false,
-  "message": "No index found. Run 'apple-mail-mcp index' to build it."
+  "message": "No index found. Run 'mac-mail-mcp index' to build it."
 }
 ```

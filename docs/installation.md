@@ -3,7 +3,7 @@
 ## With pipx (Recommended)
 
 ```bash
-pipx install apple-mail-mcp
+pipx install mac-mail-mcp
 ```
 
 A persistent install is recommended because the FTS5 search index (`~/.apple-mail-mcp/index.db`) is built once and reused across sessions. Ephemeral runners like `pipx run` or `uvx` work but won't benefit from the cached index.
@@ -11,13 +11,13 @@ A persistent install is recommended because the FTS5 search index (`~/.apple-mai
 ## With uv
 
 ```bash
-uv tool install apple-mail-mcp
+uv tool install mac-mail-mcp
 ```
 
 ## With pip
 
 ```bash
-pip install apple-mail-mcp
+pip install mac-mail-mcp
 ```
 
 ## From Source
@@ -33,7 +33,7 @@ uv sync
 Run with:
 
 ```bash
-uv run --package apple-mail-mcp apple-mail-mcp
+uv run --package mac-mail-mcp mac-mail-mcp
 ```
 
 ## Prerelease Versions
@@ -41,15 +41,15 @@ uv run --package apple-mail-mcp apple-mail-mcp
 To install a prerelease (e.g., `v0.2.0a1`):
 
 ```bash
-pipx install apple-mail-mcp --pip-args='--pre'
+pipx install mac-mail-mcp --pip-args='--pre'
 # or
-uv tool install apple-mail-mcp --prerelease=allow
+uv tool install mac-mail-mcp --prerelease=allow
 ```
 
 ## Verify Installation
 
 ```bash
-apple-mail-mcp status
+mac-mail-mcp status
 ```
 
 This prints the index status. If you see output (even "no index found"), the installation is working.

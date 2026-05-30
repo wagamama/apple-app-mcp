@@ -381,7 +381,7 @@ exclude_mailboxes = ["Drafts", 42]
 
 
 class TestInitTemplate:
-    """The CONFIG_TEMPLATE that `apple-mail-mcp init` writes."""
+    """The CONFIG_TEMPLATE that `mac-mail-mcp init` writes."""
 
     def test_template_parses_as_valid_toml(self):
         """Sanity: the template is well-formed TOML."""
@@ -417,7 +417,7 @@ class TestInitTemplate:
 
 
 class TestInitCommand:
-    """Behavior tests for `apple-mail-mcp init`."""
+    """Behavior tests for `mac-mail-mcp init`."""
 
     def test_writes_template_to_config_path(self, config_file):
         from apple_mail_mcp.cli import cli_init
