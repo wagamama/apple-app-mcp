@@ -1,0 +1,28 @@
+from __future__ import annotations
+
+import pytest
+
+from apple_calendar_mcp.builders import CalendarQueryBuilder
+
+
+def test_list_calendars_script_uses_calendar_core():
+    js = CalendarQueryBuilder().list_calendars()
+
+    assert "CalendarCore.listCalendars()" in js
+    assert "JSON.stringify" in js
+
+
+def test_events_in_range_serializes_inputs_safely():
+    js = CalendarQueryBuilder().events_in_range(
+        start="2026-01-01",
+        end="2026-02-01",
+        calendar_ids=['Work "Calendar"'],
+    )
+
+    assert '\\"Calendar\\"' in js
+    assert "CalendarCore.eventsInRange" in js
+
+
+def test_events_in_range_requires_start_and_end():
+    with pytest.raises(ValueError, match="start and end"):
+        CalendarQueryBuilder().events_in_range(start="", end="2026-01-01")
