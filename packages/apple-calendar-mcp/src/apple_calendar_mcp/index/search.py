@@ -1,14 +1,44 @@
 from __future__ import annotations
 
+import sqlite3
 from sqlite3 import Connection
 
+_FTS5_OPERATORS = {"OR", "AND", "NOT"}
+_SPECIAL_CHARS = set("'\"-():^")
 
-def _escape_fts(query: str) -> str:
-    return " ".join(part.replace('"', '""') for part in query.split())
+
+def _quote_fts_token(token: str) -> str:
+    return '"' + token.replace('"', '""') + '"'
+
+
+def _sanitize_token(token: str) -> str:
+    if token in _FTS5_OPERATORS:
+        return token
+    if token == "*":
+        return ""
+
+    has_wildcard = token.endswith("*") and len(token) > 1
+    core = token[:-1] if has_wildcard else token
+    if not core:
+        return ""
+
+    if any(char in _SPECIAL_CHARS for char in core):
+        value = _quote_fts_token(core)
+        return value + "*" if has_wildcard else value
+    return token
+
+
+def sanitize_fts_query(query: str) -> str:
+    """Return an FTS5 query that treats malformed syntax as text."""
+    return " ".join(
+        token
+        for token in (_sanitize_token(part) for part in query.split())
+        if token
+    )
 
 
 def _field_query(query: str, fields: list[str] | None) -> str:
-    escaped = _escape_fts(query)
+    escaped = sanitize_fts_query(query)
     if not fields or "all" in fields:
         return escaped
     allowed = {
@@ -34,6 +64,7 @@ def search_events(
     fields: list[str] | None = None,
     limit: int = 20,
     offset: int = 0,
+    _is_retry: bool = False,
 ) -> list[dict]:
     sql = """
     SELECT
@@ -58,7 +89,7 @@ def search_events(
     JOIN calendars c ON c.calendar_id = e.calendar_id
     WHERE events_fts MATCH ?
     """
-    params: list[object] = [_field_query(query, fields)]
+    params: list[object] = [query if _is_retry else _field_query(query, fields)]
     if start:
         sql += " AND o.occurrence_end >= ?"
         params.append(start)
@@ -72,5 +103,20 @@ def search_events(
     sql += " ORDER BY score, o.occurrence_start LIMIT ? OFFSET ?"
     params.extend([limit, offset])
 
-    rows = conn.execute(sql, params).fetchall()
+    try:
+        rows = conn.execute(sql, params).fetchall()
+    except sqlite3.OperationalError as e:
+        if "fts5: syntax error" in str(e).lower() and not _is_retry:
+            return search_events(
+                conn,
+                " ".join(_quote_fts_token(part) for part in query.split()),
+                start=start,
+                end=end,
+                calendar_ids=calendar_ids,
+                fields=None,
+                limit=limit,
+                offset=offset,
+                _is_retry=True,
+            )
+        raise
     return [dict(row) for row in rows]

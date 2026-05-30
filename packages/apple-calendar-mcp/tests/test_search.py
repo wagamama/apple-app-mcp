@@ -80,3 +80,29 @@ def test_search_events_field_filter(calendar_db):
         search_events(calendar_db, "Room", fields=["title"], limit=20, offset=0)
         == []
     )
+
+
+def test_search_events_handles_malformed_fts_query(calendar_db):
+    _seed(calendar_db)
+
+    assert (
+        search_events(calendar_db, "budget(", limit=20, offset=0)[0][
+            "event_id"
+        ]
+        == "event-1"
+    )
+
+
+def test_search_events_handles_malformed_field_query(calendar_db):
+    _seed(calendar_db)
+
+    assert (
+        search_events(
+            calendar_db,
+            "Room(",
+            fields=["location"],
+            limit=20,
+            offset=0,
+        )[0]["event_id"]
+        == "event-1"
+    )

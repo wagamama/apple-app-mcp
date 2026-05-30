@@ -147,31 +147,28 @@ def fetch_recent_messages(
         sqlite3.OperationalError: On schema mismatch. Caller
             should fall back to JXA.
     """
-    where_clauses: list[str] = ["m.deleted = 0"]
-    params: list[object] = []
-
+    mailbox_url_pattern = None
     if account_uuid:
         if mailbox_name:
-            where_clauses.append("mb.url LIKE ?")
-            params.append(f"%://{account_uuid}/{mailbox_name}%")
+            mailbox_url_pattern = f"%://{account_uuid}/{mailbox_name}%"
         else:
-            where_clauses.append("mb.url LIKE ?")
-            params.append(f"%://{account_uuid}/%")
+            mailbox_url_pattern = f"%://{account_uuid}/%"
 
+    unread_only = 0
+    flagged_only = 0
+    date_threshold = None
     if filter_kind == "unread":
-        where_clauses.append("m.read = 0")
+        unread_only = 1
     elif filter_kind == "flagged":
-        where_clauses.append("m.flagged = 1")
+        flagged_only = 1
     elif filter_kind in ("today", "last_7_days", "this_week"):
         # date_received is Unix epoch (see _unix_ts_to_iso); compare
         # against a Unix-epoch threshold of "now - delta".
         now_ts = datetime.now(tz=UTC).timestamp()
         delta_seconds = 86400 if filter_kind == "today" else 7 * 86400
-        where_clauses.append("m.date_received >= ?")
-        params.append(now_ts - delta_seconds)
+        date_threshold = now_ts - delta_seconds
     # "all": no extra clause
 
-    where_sql = " AND ".join(where_clauses)
     # We return `m.ROWID`, not `m.message_id`. Mail.app's
     # JXA `msg.id()` returns the SQLite ROWID (a small,
     # locally-assigned integer Mail.app uses as the primary
@@ -181,7 +178,7 @@ def fetch_recent_messages(
     # would (a) lose precision through JSON → JXA float
     # coercion and (b) not round-trip through get_email(),
     # which expects Mail.app's small-integer ID.
-    sql = f"""
+    sql = """
         SELECT
             m.ROWID       AS message_id,
             s.subject     AS subject,
@@ -194,11 +191,23 @@ def fetch_recent_messages(
         LEFT JOIN subjects  s  ON m.subject = s.ROWID
         LEFT JOIN addresses a  ON m.sender  = a.ROWID
         LEFT JOIN mailboxes mb ON m.mailbox = mb.ROWID
-        WHERE {where_sql}
+        WHERE m.deleted = 0
+          AND (? IS NULL OR mb.url LIKE ?)
+          AND (? = 0 OR m.read = 0)
+          AND (? = 0 OR m.flagged = 1)
+          AND (? IS NULL OR m.date_received >= ?)
         ORDER BY m.date_received DESC
         LIMIT ?
     """
-    params.append(int(limit))
+    params: list[object] = [
+        mailbox_url_pattern,
+        mailbox_url_pattern,
+        unread_only,
+        flagged_only,
+        date_threshold,
+        date_threshold,
+        int(limit),
+    ]
 
     conn = sqlite3.connect(f"file:{envelope_path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row

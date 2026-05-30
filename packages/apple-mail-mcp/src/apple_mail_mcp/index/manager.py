@@ -633,20 +633,23 @@ class IndexManager:
             (account, mailbox) tuple or None if not found
         """
         conn = self._get_conn()
-        where = ["message_id = ?"]
-        params: list = [message_id]
-        if account:
-            where.append("account = ?")
-            params.append(account)
-        if mailbox:
-            where.append("mailbox = ?")
-            params.append(mailbox)
-
-        sql = (
-            "SELECT account, mailbox FROM emails WHERE "
-            + " AND ".join(where)
-            + " LIMIT 1"
-        )
+        account_filter = account or None
+        mailbox_filter = mailbox or None
+        sql = """
+            SELECT account, mailbox
+            FROM emails
+            WHERE message_id = ?
+              AND (? IS NULL OR account = ?)
+              AND (? IS NULL OR mailbox = ?)
+            LIMIT 1
+        """
+        params: list = [
+            message_id,
+            account_filter,
+            account_filter,
+            mailbox_filter,
+            mailbox_filter,
+        ]
         row = conn.execute(sql, params).fetchone()
         if row:
             return (row["account"], row["mailbox"])
@@ -671,20 +674,23 @@ class IndexManager:
             Path to the .emlx file, or None if not found / path is NULL
         """
         conn = self._get_conn()
-        where = ["message_id = ?"]
-        params: list = [message_id]
-        if account:
-            where.append("account = ?")
-            params.append(account)
-        if mailbox:
-            where.append("mailbox = ?")
-            params.append(mailbox)
-
-        sql = (
-            "SELECT emlx_path FROM emails WHERE "
-            + " AND ".join(where)
-            + " LIMIT 1"
-        )
+        account_filter = account or None
+        mailbox_filter = mailbox or None
+        sql = """
+            SELECT emlx_path
+            FROM emails
+            WHERE message_id = ?
+              AND (? IS NULL OR account = ?)
+              AND (? IS NULL OR mailbox = ?)
+            LIMIT 1
+        """
+        params: list = [
+            message_id,
+            account_filter,
+            account_filter,
+            mailbox_filter,
+            mailbox_filter,
+        ]
         row = conn.execute(sql, params).fetchone()
         if row and row["emlx_path"]:
             return Path(row["emlx_path"])
@@ -715,16 +721,21 @@ class IndexManager:
             Number of rows deleted (typically 0 or 1).
         """
         conn = self._get_conn()
-        where = ["message_id = ?"]
-        params: list = [message_id]
-        if account:
-            where.append("account = ?")
-            params.append(account)
-        if mailbox:
-            where.append("mailbox = ?")
-            params.append(mailbox)
-
-        sql = "DELETE FROM emails WHERE " + " AND ".join(where)
+        account_filter = account or None
+        mailbox_filter = mailbox or None
+        sql = """
+            DELETE FROM emails
+            WHERE message_id = ?
+              AND (? IS NULL OR account = ?)
+              AND (? IS NULL OR mailbox = ?)
+        """
+        params: list = [
+            message_id,
+            account_filter,
+            account_filter,
+            mailbox_filter,
+            mailbox_filter,
+        ]
         cursor = conn.execute(sql, params)
         conn.commit()
         return cursor.rowcount
@@ -824,21 +835,23 @@ class IndexManager:
             List of attachment dicts, or None if email not found
         """
         conn = self._get_conn()
-        where = ["e.message_id = ?"]
-        params: list = [message_id]
-        if account:
-            where.append("e.account = ?")
-            params.append(account)
-        if mailbox:
-            where.append("e.mailbox = ?")
-            params.append(mailbox)
-
-        sql = (
-            "SELECT a.filename, a.mime_type, a.file_size, a.content_id "
-            "FROM attachments a "
-            "JOIN emails e ON a.email_rowid = e.rowid "
-            "WHERE " + " AND ".join(where)
-        )
+        account_filter = account or None
+        mailbox_filter = mailbox or None
+        sql = """
+            SELECT a.filename, a.mime_type, a.file_size, a.content_id
+            FROM attachments a
+            JOIN emails e ON a.email_rowid = e.rowid
+            WHERE e.message_id = ?
+              AND (? IS NULL OR e.account = ?)
+              AND (? IS NULL OR e.mailbox = ?)
+        """
+        params: list = [
+            message_id,
+            account_filter,
+            account_filter,
+            mailbox_filter,
+            mailbox_filter,
+        ]
         cursor = conn.execute(sql, params)
         rows = cursor.fetchall()
         if not rows:
