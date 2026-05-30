@@ -18,7 +18,33 @@ pipx install mac-mail-mcp
 pipx install mac-calendar-mcp
 ```
 
-Add one or both servers to your MCP client:
+Build local indexes for fast search:
+
+```bash
+mac-mail-mcp index --verbose
+mac-calendar-mcp index
+```
+
+### Codex CLI
+
+Register one or both servers:
+
+```bash
+codex mcp add mail -- mac-mail-mcp
+codex mcp add calendar -- mac-calendar-mcp
+```
+
+Confirm the registrations:
+
+```bash
+codex mcp list
+codex mcp get mail
+codex mcp get calendar
+```
+
+### Claude Code
+
+Create or edit `.mcp.json` in your project root:
 
 ```json
 {
@@ -33,12 +59,8 @@ Add one or both servers to your MCP client:
 }
 ```
 
-Build local indexes for fast search:
-
-```bash
-mac-mail-mcp index --verbose
-mac-calendar-mcp index
-```
+For global Claude Code configuration, put the same `mcpServers` object in
+`~/.claude/mcp.json`.
 
 ## Development
 
@@ -73,6 +95,12 @@ uv build --package mac-calendar-mcp
 - Calendar domain notes: [`CALENDAR.md`](CALENDAR.md)
 - MCP client setup guide: [`docs/mcp-client-setup.md`](docs/mcp-client-setup.md)
 - Calendar implementation plan: [`docs/superpowers/plans/2026-05-30-mac-calendar-mcp-implementation.md`](docs/superpowers/plans/2026-05-30-mac-calendar-mcp-implementation.md)
+
+Docs are deployed with GitHub Pages from `.github/workflows/docs.yml`. The
+repository must have Pages configured once in **Settings -> Pages -> Build and
+deployment -> Source: GitHub Actions**. The workflow deploys the built artifact;
+it does not try to create or enable the Pages site because GitHub rejects that
+operation from the default workflow token in some repositories.
 
 ## License
 
