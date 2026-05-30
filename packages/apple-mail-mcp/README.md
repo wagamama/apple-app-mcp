@@ -1,6 +1,6 @@
 # Apple Mail MCP
 
-<!-- mcp-name: io.github.imdinu/apple-mail-mcp -->
+<!-- mcp-name: io.github.wagamama/mac-mail-mcp -->
 
 <p align="center">
   <img src="../../docs/assets/social-card.svg" alt="Apple Mail MCP — Full-coverage FTS5 body search" width="720">
@@ -11,16 +11,16 @@
 [![macOS](https://img.shields.io/badge/platform-macOS-lightgrey.svg)](https://www.apple.com/macos/)
 [![MCP](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![CI](https://github.com/imdinu/apple-mail-mcp/actions/workflows/lint.yml/badge.svg)](https://github.com/imdinu/apple-mail-mcp/actions/workflows/lint.yml)
+[![CI](https://github.com/wagamama/apple-app-mcp/actions/workflows/lint.yml/badge.svg)](https://github.com/wagamama/apple-app-mcp/actions/workflows/lint.yml)
 
 The only Apple Mail MCP server with **full-coverage body search** — reliable on large mailboxes where AppleScript-based servers timeout. 8 tools for reading, searching, and extracting email content.
 
-**[Read the docs](https://imdinu.github.io/apple-mail-mcp/)** for the full guide.
+**[Read the docs](https://wagamama.github.io/apple-app-mcp/)** for the full guide.
 
 ## Quick Start
 
 ```bash
-pipx install apple-mail-mcp
+pipx install mac-mail-mcp
 ```
 
 Add to your MCP client:
@@ -29,11 +29,13 @@ Add to your MCP client:
 {
   "mcpServers": {
     "mail": {
-      "command": "apple-mail-mcp"
+      "command": "mac-mail-mcp"
     }
   }
 }
 ```
+
+`apple-mail-mcp` remains available as a compatibility command alias.
 
 ### Build the Search Index (Recommended)
 
@@ -41,19 +43,19 @@ Add to your MCP client:
 # Requires Full Disk Access for Terminal
 # System Settings → Privacy & Security → Full Disk Access → Add Terminal
 
-apple-mail-mcp index --verbose
+mac-mail-mcp index --verbose
 ```
 
 ### Configure (Optional)
 
 ```bash
-apple-mail-mcp init   # writes ~/.apple-mail-mcp/config.toml
+mac-mail-mcp init   # writes ~/.apple-mail-mcp/config.toml
 ```
 
 Writes a commented config file you can edit to set defaults like your
 primary account or mailbox. Every key has a matching `APPLE_MAIL_*` env
 var if you prefer environment-based config. See
-[Configuration](https://imdinu.github.io/apple-mail-mcp/configuration/)
+[Configuration](https://wagamama.github.io/apple-app-mcp/configuration/)
 for the full schema and precedence rules.
 
 ## Tools
@@ -71,7 +73,7 @@ for the full schema and precedence rules.
 
 ## Performance
 
-Tested against [6 other Apple Mail MCP servers](https://imdinu.github.io/apple-mail-mcp/benchmarks/) on a real **~73K-message** mailbox:
+Tested against [6 other Apple Mail MCP servers](https://wagamama.github.io/apple-app-mcp/benchmarks/) on a real **~73K-message** mailbox:
 
 - **Only server with full-coverage body search.** Most competitors don't support body search at all; the one that does (BastianZim) live-scans only the 5000 most recent messages — silent miss on anything older. Our FTS5 index covers the entire mailbox.
 - **~3ms single email fetch** via disk-first `.emlx` reading (no JXA round-trip).
@@ -84,9 +86,9 @@ Tested against [6 other Apple Mail MCP servers](https://imdinu.github.io/apple-m
 ## Configuration
 
 Apple Mail MCP works out of the box. To customize defaults, run
-`apple-mail-mcp init` to generate a `config.toml` template — or use
+`mac-mail-mcp init` to generate a `config.toml` template — or use
 the matching `APPLE_MAIL_*` environment variables. See the
-[Configuration docs](https://imdinu.github.io/apple-mail-mcp/configuration/)
+[Configuration docs](https://wagamama.github.io/apple-app-mcp/configuration/)
 for the full schema and the CLI > env > file > default precedence.
 
 Per-client env overrides via the MCP client's launch config also work:
@@ -95,7 +97,7 @@ Per-client env overrides via the MCP client's launch config also work:
 {
   "mcpServers": {
     "mail": {
-      "command": "apple-mail-mcp",
+      "command": "mac-mail-mcp",
       "args": ["--watch"],
       "env": {
         "APPLE_MAIL_DEFAULT_ACCOUNT": "Work"
@@ -110,19 +112,19 @@ Per-client env overrides via the MCP client's launch config also work:
 All tools are also available as standalone CLI commands (no MCP server needed):
 
 ```bash
-apple-mail-mcp search "quarterly report" --scope subject
-apple-mail-mcp search "invoice" --after 2026-01-01 --limit 10
-apple-mail-mcp read 12345
-apple-mail-mcp emails --filter unread --limit 10
-apple-mail-mcp accounts
-apple-mail-mcp mailboxes --account Work
-apple-mail-mcp extract 12345 invoice.pdf
+mac-mail-mcp search "quarterly report" --scope subject
+mac-mail-mcp search "invoice" --after 2026-01-01 --limit 10
+mac-mail-mcp read 12345
+mac-mail-mcp emails --filter unread --limit 10
+mac-mail-mcp accounts
+mac-mail-mcp mailboxes --account Work
+mac-mail-mcp extract 12345 invoice.pdf
 ```
 
-All commands output JSON. Generate a [Claude Code skill](https://imdinu.github.io/apple-mail-mcp/configuration/#cli-commands) for CLI-based access:
+All commands output JSON. Generate a [Claude Code skill](https://wagamama.github.io/apple-app-mcp/configuration/#cli-commands) for CLI-based access:
 
 ```bash
-apple-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
+mac-mail-mcp integrate claude > "$HOME/.claude/skills/apple-mail.md"
 ```
 
 ## Development
@@ -132,7 +134,7 @@ git clone https://github.com/wagamama/apple-app-mcp
 cd apple-app-mcp
 uv sync
 uv run ruff check packages/apple-mail-mcp/src
-uv run --package apple-mail-mcp pytest packages/apple-mail-mcp/tests
+uv run --package mac-mail-mcp pytest packages/apple-mail-mcp/tests
 ```
 
 ## License

@@ -42,8 +42,8 @@ domain file.
 ```bash
 uv run pytest
 uv run pytest -v
-uv run --package apple-mail-mcp pytest packages/apple-mail-mcp/tests/test_search.py
-uv run --package apple-calendar-mcp pytest packages/apple-calendar-mcp/tests
+uv run --package mac-mail-mcp pytest packages/apple-mail-mcp/tests/test_search.py
+uv run --package mac-calendar-mcp pytest packages/apple-calendar-mcp/tests
 ```
 
 ## Git Workflow and CI/CD

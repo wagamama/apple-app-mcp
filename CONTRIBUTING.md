@@ -8,14 +8,14 @@ Thanks for your interest in contributing! This guide will help you get started.
 
 2. **Clone and install**:
    ```bash
-   git clone https://github.com/imdinu/apple-mail-mcp.git
-   cd apple-mail-mcp
+   git clone https://github.com/wagamama/apple-app-mcp.git
+   cd apple-app-mcp
    uv sync
    ```
 
 3. **Build the search index** (requires Full Disk Access for your terminal):
    ```bash
-   uv run apple-mail-mcp index
+   uv run mac-mail-mcp index
    ```
 
 4. **Run tests**:
@@ -82,7 +82,7 @@ Tests use `pytest` with `pytest-asyncio`. Most tests mock JXA execution so they 
 
 ## Reporting Issues
 
-Open an issue on [GitHub](https://github.com/imdinu/apple-mail-mcp/issues) with:
+Open an issue on [GitHub](https://github.com/wagamama/apple-app-mcp/issues) with:
 - What you expected vs what happened
 - macOS version and Mail.app configuration (number of accounts, rough mailbox sizes)
 - Any error output or logs

@@ -1,6 +1,6 @@
 # Apple Calendar MCP
 
-<!-- mcp-name: io.github.wagamama/apple-calendar-mcp -->
+<!-- mcp-name: io.github.wagamama/mac-calendar-mcp -->
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -20,7 +20,7 @@ Apple Mail MCP.
 ## Quick Start
 
 ```bash
-pipx install apple-calendar-mcp
+pipx install mac-calendar-mcp
 ```
 
 Add to your MCP client:
@@ -29,11 +29,13 @@ Add to your MCP client:
 {
   "mcpServers": {
     "calendar": {
-      "command": "apple-calendar-mcp"
+      "command": "mac-calendar-mcp"
     }
   }
 }
 ```
+
+`apple-calendar-mcp` remains available as a compatibility command alias.
 
 ### Build the Search Index (Recommended)
 
@@ -41,7 +43,7 @@ Add to your MCP client:
 # Requires Calendar automation permission for Terminal or your MCP client
 # System Settings -> Privacy & Security -> Automation
 
-apple-calendar-mcp index
+mac-calendar-mcp index
 ```
 
 The index enables fast archive search and date-range reads from a local SQLite
@@ -95,7 +97,7 @@ Per-client env overrides via the MCP client's launch config work:
 {
   "mcpServers": {
     "calendar": {
-      "command": "apple-calendar-mcp",
+      "command": "mac-calendar-mcp",
       "env": {
         "APPLE_CALENDAR_DEFAULT_CALENDARS": "Work,Personal",
         "APPLE_CALENDAR_INDEX_FUTURE_YEARS": "2"
@@ -112,13 +114,13 @@ The default index path is `$HOME/.apple-calendar-mcp/index.db`.
 All read tools are also available as standalone CLI commands:
 
 ```bash
-apple-calendar-mcp calendars
-apple-calendar-mcp index
-apple-calendar-mcp status
-apple-calendar-mcp search "quarterly planning" --limit 10
-apple-calendar-mcp events 2026-05-01 2026-06-01 --limit 50
-apple-calendar-mcp agenda --days 7
-apple-calendar-mcp rebuild
+mac-calendar-mcp calendars
+mac-calendar-mcp index
+mac-calendar-mcp status
+mac-calendar-mcp search "quarterly planning" --limit 10
+mac-calendar-mcp events 2026-05-01 2026-06-01 --limit 50
+mac-calendar-mcp agenda --days 7
+mac-calendar-mcp rebuild
 ```
 
 All data commands output JSON where practical.
@@ -130,8 +132,8 @@ git clone https://github.com/wagamama/apple-app-mcp
 cd apple-app-mcp
 uv sync
 uv run ruff check packages/apple-calendar-mcp/src
-uv run --package apple-calendar-mcp pytest packages/apple-calendar-mcp/tests
-uv build --package apple-calendar-mcp
+uv run --package mac-calendar-mcp pytest packages/apple-calendar-mcp/tests
+uv build --package mac-calendar-mcp
 ```
 
 See [`CALENDAR.md`](../../CALENDAR.md) for domain architecture, tool design,
