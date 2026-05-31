@@ -81,6 +81,59 @@ def _fetch_attendees(conn: sqlite3.Connection, event_id: int) -> list[dict]:
     ]
 
 
+def _fetch_excluded_dates(conn: sqlite3.Connection, event_id: int) -> list[str]:
+    rows = conn.execute(
+        """
+        SELECT orig_date
+        FROM CalendarItem
+        WHERE orig_item_id = ?
+          AND orig_date IS NOT NULL
+        ORDER BY orig_date
+        """,
+        (event_id,),
+    ).fetchall()
+    return [value for row in rows if (value := _to_iso(row["orig_date"]))]
+
+
+def _recurrence_to_rrule(row: sqlite3.Row) -> str:
+    frequency = {
+        1: "DAILY",
+        2: "WEEKLY",
+        3: "MONTHLY",
+        4: "YEARLY",
+    }.get(row["recurrence_frequency"])
+    if not frequency:
+        return ""
+
+    parts = [f"FREQ={frequency}"]
+    interval = row["recurrence_interval"]
+    if interval and interval > 1:
+        parts.append(f"INTERVAL={interval}")
+    count = row["recurrence_count"]
+    if count:
+        parts.append(f"COUNT={count}")
+    until = _to_iso(row["recurrence_end_date"])
+    if until:
+        parts.append(f"UNTIL={until}")
+
+    byday = _specifier_to_byday(row["recurrence_specifier"] or "")
+    if byday:
+        parts.append(f"BYDAY={byday}")
+
+    return ";".join(parts)
+
+
+def _specifier_to_byday(specifier: str) -> str:
+    if not specifier.startswith("D="):
+        return ""
+    days = []
+    for raw_day in specifier.removeprefix("D=").split(","):
+        day = raw_day.removeprefix("0")
+        if day:
+            days.append(day)
+    return ",".join(days)
+
+
 def fetch_snapshot_from_store(
     path: Path = DEFAULT_STORE_PATH,
     *,
@@ -117,8 +170,6 @@ def fetch_snapshot_from_store(
         rows = conn.execute(
             f"""
             SELECT
-                oc.occurrence_start_date,
-                oc.occurrence_end_date,
                 ci.ROWID AS item_rowid,
                 ci.summary,
                 ci.description,
@@ -131,23 +182,37 @@ def fetch_snapshot_from_store(
                 ci.unique_identifier,
                 ci.UUID AS item_uuid,
                 c.title AS calendar_title,
-                l.title AS location_title
-            FROM OccurrenceCache oc
-            JOIN CalendarItem ci ON ci.ROWID = oc.event_id
-            JOIN Calendar c ON c.ROWID = oc.calendar_id
+                l.title AS location_title,
+                r.frequency AS recurrence_frequency,
+                r.interval AS recurrence_interval,
+                r.count AS recurrence_count,
+                r.end_date AS recurrence_end_date,
+                r.specifier AS recurrence_specifier
+            FROM CalendarItem ci
+            JOIN Calendar c ON c.ROWID = ci.calendar_id
             LEFT JOIN Location l ON l.ROWID = ci.location_id
-            WHERE oc.occurrence_end_date >= ?
-              AND oc.occurrence_start_date <= ?
+            LEFT JOIN Recurrence r ON r.owner_id = ci.ROWID
+            WHERE ci.start_date <= ?
+              AND (
+                ci.end_date >= ?
+                OR (
+                  r.ROWID IS NOT NULL
+                  AND (
+                    r.end_date IS NULL
+                    OR r.end_date >= ?
+                  )
+                )
+              )
               {where_sql}
-            ORDER BY oc.occurrence_start_date, ci.ROWID
+            ORDER BY ci.start_date, ci.ROWID
             """,
-            [start_seconds, end_seconds, *where_params],
+            [end_seconds, start_seconds, start_seconds, *where_params],
         ).fetchall()
 
         events: list[dict[str, Any]] = []
         for row in rows:
-            occurrence_start = _to_iso(row["occurrence_start_date"]) or ""
-            occurrence_end = _to_iso(row["occurrence_end_date"]) or ""
+            occurrence_start = _to_iso(row["start_date"]) or ""
+            occurrence_end = _to_iso(row["end_date"]) or ""
             base_id = (
                 row["unique_identifier"]
                 or row["item_uuid"]
@@ -167,8 +232,10 @@ def fetch_snapshot_from_store(
                     "start_date": occurrence_start,
                     "end_date": occurrence_end,
                     "modified_at": _to_iso(row["last_modified"]),
-                    "recurrence": "",
-                    "excluded_dates": [],
+                    "recurrence": _recurrence_to_rrule(row),
+                    "excluded_dates": _fetch_excluded_dates(
+                        conn, row["item_rowid"]
+                    ),
                     "attendees": _fetch_attendees(conn, row["item_rowid"]),
                 }
             )
