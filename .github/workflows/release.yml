@@ -85,6 +85,24 @@ jobs:
       - name: Authenticate to MCP Registry via GitHub OIDC
         run: ./mcp-publisher login github-oidc
       - name: Publish Mail to MCP Registry
-        run: ./mcp-publisher publish server.mail.json
+        run: |
+          set +e
+          output=$(./mcp-publisher publish server.mail.json 2>&1)
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ] \
+            && ! printf '%s\n' "$output" | grep -q "cannot publish duplicate version"; then
+            exit "$status"
+          fi
       - name: Publish Calendar to MCP Registry
-        run: ./mcp-publisher publish server.calendar.json
+        run: |
+          set +e
+          output=$(./mcp-publisher publish server.calendar.json 2>&1)
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ] \
+            && ! printf '%s\n' "$output" | grep -q "cannot publish duplicate version"; then
+            exit "$status"
+          fi
