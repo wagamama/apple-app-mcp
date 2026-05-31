@@ -171,7 +171,7 @@ This takes **<5s** even for 20,000+ emails (vs. 60s+ timeout with the old JXA-ba
 Enable automatic index updates with the `--watch` flag:
 
 ```bash
-mac-mail-mcp --watch serve
+mac-mail-mcp serve --watch
 ```
 
 The file watcher monitors `~/Library/Mail/V10/` for:

@@ -19,8 +19,8 @@ mac-calendar-mcp index
 Register both servers with Codex:
 
 ```bash
-codex mcp add mail -- mac-mail-mcp --watch serve
-codex mcp add calendar -- mac-calendar-mcp --watch serve
+codex mcp add mail -- mac-mail-mcp serve --watch
+codex mcp add calendar -- mac-calendar-mcp serve --watch
 ```
 
 Confirm the registrations:
@@ -35,7 +35,7 @@ Remove and re-add a server if you need to change its command:
 
 ```bash
 codex mcp remove mail
-codex mcp add mail -- mac-mail-mcp --watch serve
+codex mcp add mail -- mac-mail-mcp serve --watch
 ```
 
 ## Claude Code
@@ -74,8 +74,8 @@ Use watch mode after the first index build. Mail watches local `.emlx` files for
 changes; Calendar polls Calendar.app and refreshes the index periodically.
 
 ```bash
-mac-mail-mcp --watch serve
-mac-calendar-mcp --watch serve
+mac-mail-mcp serve --watch
+mac-calendar-mcp serve --watch
 ```
 
 Calendar defaults to a 300-second refresh interval. Override it when needed:

@@ -3,7 +3,7 @@
 Usage:
     mac-calendar-mcp                 # Run MCP server
     mac-calendar-mcp serve           # Run MCP server explicitly
-    mac-calendar-mcp --watch serve   # Run with periodic index updates
+    mac-calendar-mcp serve --watch   # Run with periodic index updates
     mac-calendar-mcp init            # Write config.toml template
     mac-calendar-mcp index           # Build index from Calendar
     mac-calendar-mcp status          # Show index status

@@ -42,8 +42,8 @@ the caller omits a scope.
 Register one or both servers:
 
 ```bash
-codex mcp add mail -- mac-mail-mcp --watch serve
-codex mcp add calendar -- mac-calendar-mcp --watch serve
+codex mcp add mail -- mac-mail-mcp serve --watch
+codex mcp add calendar -- mac-calendar-mcp serve --watch
 ```
 
 Confirm the registrations:

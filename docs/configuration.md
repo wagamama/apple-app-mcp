@@ -205,7 +205,7 @@ To keep the search index automatically updated:
 mac-mail-mcp              # Run MCP server (default)
 mac-mail-mcp serve        # Run MCP server explicitly
 mac-mail-mcp serve -r     # Run in read-only mode
-mac-mail-mcp --watch serve # Run with real-time index updates
+mac-mail-mcp serve --watch # Run with real-time index updates
 mac-mail-mcp init         # Write a config.toml template
 mac-mail-mcp index        # Build search index from disk
 mac-mail-mcp status       # Show index statistics

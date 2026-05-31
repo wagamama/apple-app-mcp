@@ -2,7 +2,7 @@
 
 Usage:
     mac-calendar-mcp index
-    mac-calendar-mcp --watch serve
+    mac-calendar-mcp serve --watch
 """
 
 from .cli import main

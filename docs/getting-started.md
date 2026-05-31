@@ -78,7 +78,7 @@ Once configured, talk to Claude naturally:
 Keep the index automatically up-to-date as new emails arrive:
 
 ```bash
-mac-mail-mcp --watch serve
+mac-mail-mcp serve --watch
 ```
 
 This monitors `~/Library/Mail/V10/` for new `.emlx` files and indexes them in real-time.

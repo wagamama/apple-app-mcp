@@ -360,7 +360,7 @@ CalendarCore.formatDate(date)  // ISO string or null
 ```bash
 mac-calendar-mcp              # Run MCP server (default)
 mac-calendar-mcp serve        # Run MCP server explicitly
-mac-calendar-mcp --watch serve # Run with periodic index updates
+mac-calendar-mcp serve --watch # Run with periodic index updates
 mac-calendar-mcp index        # Build search index from Calendar.app
 mac-calendar-mcp status       # Show index statistics
 mac-calendar-mcp rebuild      # Force rebuild index

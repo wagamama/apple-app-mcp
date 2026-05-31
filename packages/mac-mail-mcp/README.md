@@ -49,7 +49,7 @@ Run the MCP server with watch mode to keep the index current while new mail
 arrives:
 
 ```bash
-mac-mail-mcp --watch serve
+mac-mail-mcp serve --watch
 ```
 
 ### Configure (Optional)

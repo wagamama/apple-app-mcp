@@ -52,7 +52,7 @@ Run the MCP server with watch mode to keep the index current while events
 change in Calendar.app:
 
 ```bash
-mac-calendar-mcp --watch serve
+mac-calendar-mcp serve --watch
 ```
 
 The server performs a background sync at startup. Watch mode then checks

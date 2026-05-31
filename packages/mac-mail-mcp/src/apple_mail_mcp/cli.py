@@ -10,7 +10,7 @@ Provides commands for:
 Usage:
     mac-mail-mcp            # Run MCP server (default)
     mac-mail-mcp serve      # Run MCP server explicitly
-    mac-mail-mcp --watch serve # Run with real-time index updates
+    mac-mail-mcp serve --watch # Run with real-time index updates
     mac-mail-mcp init       # Write config.toml template
     mac-mail-mcp index      # Build index from disk
     mac-mail-mcp status     # Show index status

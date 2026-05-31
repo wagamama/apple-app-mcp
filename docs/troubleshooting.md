@@ -33,7 +33,7 @@ Common issues and their solutions.
     Good: "quarterly budget"
     ```
 
-3. **Index is stale.** Check with `mac-mail-mcp status`. If the index is old, run `mac-mail-mcp rebuild` or start the server with `--watch serve` for real-time updates.
+3. **Index is stale.** Check with `mac-mail-mcp status`. If the index is old, run `mac-mail-mcp rebuild` or start the server with `serve --watch` for real-time updates.
 
 4. **Mailbox excluded.** By default, `Drafts` is excluded from indexing. Check `APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES` (env) or `[index] exclude_mailboxes` in `~/.mac-mail-mcp/config.toml`.
 
