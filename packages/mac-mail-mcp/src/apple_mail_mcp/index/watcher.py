@@ -26,6 +26,7 @@ from ..config import (
     get_index_exclude_mailboxes,
     get_index_include_mailboxes,
 )
+from .accounts import expand_account_filter
 from .disk import find_mail_directory, parse_emlx
 from .schema import (
     CLEAR_PARSE_FAILURE_SQL,
@@ -83,8 +84,10 @@ class IndexWatcher:
         self.db_path = db_path
         self.on_update = on_update
         self.debounce_ms = debounce_ms
-        self._accounts = get_index_accounts()
-        self._exclude_accounts = get_index_exclude_accounts()
+        self._accounts = expand_account_filter(get_index_accounts())
+        self._exclude_accounts = expand_account_filter(
+            get_index_exclude_accounts()
+        )
         self._include_mailboxes = get_index_include_mailboxes()
         self._exclude_mailboxes = get_index_exclude_mailboxes()
 

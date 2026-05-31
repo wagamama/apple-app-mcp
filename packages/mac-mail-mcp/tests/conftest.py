@@ -7,12 +7,27 @@ from pathlib import Path
 
 import pytest
 
+from apple_mail_mcp import config
+from apple_mail_mcp.config import _invalidate_config_cache
+from apple_mail_mcp.index.accounts import AccountMap
 from apple_mail_mcp.index.schema import (
     DEFAULT_PRAGMAS,
     INSERT_EMAIL_SQL,
     SCHEMA_VERSION,
     get_schema_sql,
 )
+
+
+@pytest.fixture(autouse=True)
+def isolate_user_config(monkeypatch, tmp_path: Path):
+    """Keep tests independent from the user's real mac-mail-mcp config."""
+    path = tmp_path / "config.toml"
+    monkeypatch.setattr(config, "CONFIG_FILE_PATH", path)
+    AccountMap._instance = None
+    _invalidate_config_cache()
+    yield
+    AccountMap._instance = None
+    _invalidate_config_cache()
 
 
 @pytest.fixture

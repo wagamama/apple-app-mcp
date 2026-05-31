@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 from apple_mail_mcp.index.disk import (
     MAX_EMLX_SIZE,
@@ -394,6 +395,32 @@ class TestScanExcludesDrafts:
 
         assert len(files) == 1
         assert "work" in str(files[0])
+
+    @patch("apple_mail_mcp.config.get_index_accounts")
+    @patch("apple_mail_mcp.executor.execute_with_core")
+    def test_scan_expands_config_account_names(
+        self, mock_exec, mock_get_accounts, tmp_path: Path
+    ):
+        from apple_mail_mcp.index.disk import scan_emlx_files
+
+        account_uuid = "24E569DF-5E45-4B6A-8E3C-1A2B3C4D5E6F"
+        mock_get_accounts.return_value = {"Work"}
+        mock_exec.return_value = [{"name": "Work", "id": account_uuid}]
+
+        mail_dir = tmp_path / "V10"
+        inbox = mail_dir / account_uuid / "INBOX.mbox" / "Data" / "Messages"
+        inbox.mkdir(parents=True)
+        (inbox / "1.emlx").write_bytes(b"test")
+
+        files = list(
+            scan_emlx_files(
+                mail_dir,
+                exclude_accounts=set(),
+                exclude_mailboxes=set(),
+            )
+        )
+
+        assert files == [inbox / "1.emlx"]
 
     def test_scan_limits_include_mailboxes(self, tmp_path: Path):
         from apple_mail_mcp.index.disk import scan_emlx_files

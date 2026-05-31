@@ -132,6 +132,35 @@ class TestProcessPendingResilience:
         assert count == 0
 
 
+class TestIndexScope:
+    """Watcher account scoping should match disk index scoping."""
+
+    @patch("apple_mail_mcp.index.watcher.get_index_exclude_mailboxes")
+    @patch("apple_mail_mcp.index.watcher.get_index_include_mailboxes")
+    @patch("apple_mail_mcp.index.watcher.get_index_exclude_accounts")
+    @patch("apple_mail_mcp.index.watcher.get_index_accounts")
+    @patch("apple_mail_mcp.executor.execute_with_core")
+    def test_init_expands_config_account_names(
+        self,
+        mock_exec,
+        mock_get_accounts,
+        mock_get_exclude_accounts,
+        mock_get_include_mailboxes,
+        mock_get_exclude_mailboxes,
+        tmp_path: Path,
+    ):
+        account_uuid = "24E569DF-5E45-4B6A-8E3C-1A2B3C4D5E6F"
+        mock_get_accounts.return_value = {"Work"}
+        mock_get_exclude_accounts.return_value = set()
+        mock_get_include_mailboxes.return_value = None
+        mock_get_exclude_mailboxes.return_value = set()
+        mock_exec.return_value = [{"name": "Work", "id": account_uuid}]
+
+        watcher = IndexWatcher(tmp_path / "index.db")
+
+        assert watcher._in_index_scope(account_uuid, "INBOX")
+
+
 class TestPathParsing:
     """Watcher should handle noisy filesystem events gracefully."""
 

@@ -71,6 +71,9 @@ def _load_config_file() -> dict:
     try:
         with path.open("rb") as f:
             data = tomllib.load(f)
+    except FileNotFoundError:
+        _cached_config = {}
+        return {}
     except tomllib.TOMLDecodeError as e:
         raise ConfigError(f"{path}: TOML syntax error: {e}") from e
 
@@ -406,13 +409,15 @@ config_version = 1
 # Env: APPLE_MAIL_INDEX_MAX_EMAILS
 # max_emails = 5000
 
-# Accounts to include in the local index. When unset, all accounts are
-# indexed. This is separate from [defaults].account, which only controls
-# tool defaults when account is omitted.
+# Accounts to include in the local index. Values may be Mail account names or
+# account IDs. When unset, all accounts are indexed. This is separate from
+# [defaults].account, which only controls tool defaults when account is
+# omitted.
 # Env: APPLE_MAIL_INDEX_ACCOUNTS (comma-separated)
 # accounts = ["Personal"]
 
-# Accounts to skip during indexing.
+# Accounts to skip during indexing. Values may be Mail account names or account
+# IDs.
 # Env: APPLE_MAIL_INDEX_EXCLUDE_ACCOUNTS (comma-separated)
 # exclude_accounts = []
 

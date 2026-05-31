@@ -7,12 +7,12 @@
     "url": "https://github.com/wagamama/apple-app-mcp",
     "source": "github"
   },
-  "version": "0.5.7",
+  "version": "0.5.8",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "mac-calendar-mcp",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"

@@ -40,6 +40,7 @@ class AccountMap:
         self._uuid_to_name: dict[str, str] = {}
         self._loaded_at: float = 0
         self._lock = threading.Lock()
+        self._sync_lock = threading.Lock()
         self._async_lock = asyncio.Lock()
 
     @classmethod
@@ -149,3 +150,48 @@ class AccountMap:
             script = AccountsQueryBuilder().list_accounts()
             accounts = await execute_with_core_async(script)
             self.load_from_jxa(accounts)
+
+    def ensure_loaded_sync(self) -> None:
+        """Ensure the map is populated from synchronous CLI/index code."""
+        if not self._is_stale():
+            return
+
+        with self._sync_lock:
+            if not self._is_stale():
+                return
+
+            from ..builders import AccountsQueryBuilder
+            from ..executor import execute_with_core
+
+            script = AccountsQueryBuilder().list_accounts()
+            accounts = execute_with_core(script)
+            self.load_from_jxa(accounts)
+
+
+def expand_account_filter(accounts: set[str] | None) -> set[str] | None:
+    """Expand friendly account names with their disk UUIDs.
+
+    Disk indexing sees account UUID directory names, while user config usually
+    uses Mail's friendly account names. Preserve original values so UUIDs and
+    future path-compatible names still work directly.
+    """
+    if accounts is None:
+        return None
+    if not accounts:
+        return set()
+
+    expanded = set(accounts)
+    acct_map = AccountMap.get_instance()
+    try:
+        acct_map.ensure_loaded_sync()
+    except Exception as e:
+        logger.warning(
+            "Could not resolve Mail account names for index scope: %s", e
+        )
+        return expanded
+
+    for account in accounts:
+        uuid = acct_map.name_to_uuid(account)
+        if uuid:
+            expanded.add(uuid)
+    return expanded

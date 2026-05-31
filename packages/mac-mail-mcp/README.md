@@ -70,8 +70,8 @@ Common index-scope settings:
 
 | Variable | Purpose |
 |----------|---------|
-| `APPLE_MAIL_INDEX_ACCOUNTS` | Comma-separated account directory names to index; unset indexes all accounts. |
-| `APPLE_MAIL_INDEX_EXCLUDE_ACCOUNTS` | Comma-separated account directory names to skip. |
+| `APPLE_MAIL_INDEX_ACCOUNTS` | Comma-separated Mail account names or account IDs to index; unset indexes all accounts. |
+| `APPLE_MAIL_INDEX_EXCLUDE_ACCOUNTS` | Comma-separated Mail account names or account IDs to skip. |
 | `APPLE_MAIL_INDEX_INCLUDE_MAILBOXES` | Comma-separated mailbox names to index; unset includes all non-excluded mailboxes. |
 | `APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES` | Comma-separated mailbox names to skip; defaults to `Drafts`. |
 

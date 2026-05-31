@@ -6,7 +6,11 @@ from unittest.mock import patch
 
 import pytest
 
-from apple_mail_mcp.index.accounts import _CACHE_TTL, AccountMap
+from apple_mail_mcp.index.accounts import (
+    _CACHE_TTL,
+    AccountMap,
+    expand_account_filter,
+)
 
 SAMPLE_ACCOUNTS = [
     {"name": "Work", "id": "24E569DF-5E45-4B6A-8E3C-1A2B3C4D5E6F"},
@@ -134,4 +138,34 @@ class TestEnsureLoaded:
 
         await m.ensure_loaded()
 
+        mock_exec.assert_not_called()
+
+
+class TestExpandAccountFilter:
+    """Tests for expanding configured account names to disk UUIDs."""
+
+    @patch("apple_mail_mcp.executor.execute_with_core")
+    def test_expands_friendly_names_to_uuids(self, mock_exec):
+        """Disk index filters accept Mail account names."""
+        mock_exec.return_value = SAMPLE_ACCOUNTS
+
+        expanded = expand_account_filter({"Work"})
+
+        assert expanded == {"Work", SAMPLE_ACCOUNTS[0]["id"]}
+
+    @patch("apple_mail_mcp.executor.execute_with_core")
+    def test_preserves_unknown_values(self, mock_exec):
+        """Unknown account IDs/names are left usable as direct path filters."""
+        mock_exec.return_value = SAMPLE_ACCOUNTS
+
+        expanded = expand_account_filter({"Unknown"})
+
+        assert expanded == {"Unknown"}
+
+    def test_none_filter_stays_unrestricted(self):
+        assert expand_account_filter(None) is None
+
+    @patch("apple_mail_mcp.executor.execute_with_core")
+    def test_empty_filter_does_not_query_jxa(self, mock_exec):
+        assert expand_account_filter(set()) == set()
         mock_exec.assert_not_called()

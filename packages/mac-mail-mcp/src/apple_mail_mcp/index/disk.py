@@ -1056,12 +1056,14 @@ def scan_emlx_files(
     """
     if accounts is None:
         from ..config import get_index_accounts
+        from .accounts import expand_account_filter
 
-        accounts = get_index_accounts()
+        accounts = expand_account_filter(get_index_accounts())
     if exclude_accounts is None:
         from ..config import get_index_exclude_accounts
+        from .accounts import expand_account_filter
 
-        exclude_accounts = get_index_exclude_accounts()
+        exclude_accounts = expand_account_filter(get_index_exclude_accounts())
     if include_mailboxes is None:
         from ..config import get_index_include_mailboxes
 
