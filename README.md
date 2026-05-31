@@ -69,7 +69,8 @@ Create or edit `.mcp.json` in your project root:
 ```
 
 Watch mode keeps the indexes current while the MCP servers are running. Mail
-uses file watching; Calendar polls Calendar.app periodically.
+uses file watching; Calendar performs a startup sync and then refreshes when
+Calendar's local SQLite database files change.
 
 For global Claude Code configuration, put the same `mcpServers` object in
 `~/.claude/mcp.json`.

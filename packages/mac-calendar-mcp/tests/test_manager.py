@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 from apple_calendar_mcp.executor import JXAError
@@ -73,6 +74,39 @@ def test_manager_search_returns_results(tmp_path):
     stats = manager.get_stats()
     assert stats.coverage_start == "2026-05-01T10:00:00Z"
     assert stats.coverage_end == "2026-05-01T11:00:00Z"
+
+
+def test_manager_reports_stale_index_when_last_sync_exceeds_threshold(tmp_path):
+    db_path = tmp_path / "calendar.db"
+    manager = IndexManager(db_path=db_path)
+    snapshot = {
+        "calendars": [
+            {
+                "id": "cal-1",
+                "name": "Work",
+                "color": "#ff0000",
+                "writable": True,
+                "description": "",
+            }
+        ],
+        "events": [],
+    }
+
+    with patch.object(manager, "fetch_snapshot", return_value=snapshot):
+        manager.build_from_jxa()
+
+    stale_time = datetime.now(UTC) - timedelta(hours=3)
+    manager._connection().execute(
+        "UPDATE calendars SET indexed_at = ?",
+        (stale_time.strftime("%Y-%m-%d %H:%M:%S"),),
+    )
+    manager._connection().commit()
+
+    with patch(
+        "apple_calendar_mcp.index.manager.get_index_staleness_hours",
+        return_value=1,
+    ):
+        assert manager.is_stale() is True
 
 
 def test_fetch_snapshot_uses_configured_year_windows(tmp_path):

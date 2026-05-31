@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import MagicMock
 
 from apple_calendar_mcp import cli
@@ -32,6 +33,7 @@ def test_watch_loop_syncs_until_stopped(capsys):
     cli._watch_calendar_index(
         manager,
         interval_seconds=1,
+        store_path=None,
         sleep=sleep,
         max_iterations=2,
     )
@@ -43,16 +45,93 @@ def test_watch_loop_syncs_until_stopped(capsys):
     assert "Calendar index up to date" in captured.err
 
 
+def test_watch_loop_syncs_when_calendar_store_changes(tmp_path, capsys):
+    store = tmp_path / "Calendar.sqlitedb"
+    store.write_text("initial")
+    manager = MagicMock()
+    manager.sync_updates.return_value = 4
+    sleep = MagicMock(side_effect=lambda _: store.write_text("changed"))
+
+    cli._watch_calendar_index(
+        manager,
+        interval_seconds=1,
+        store_path=store,
+        sleep=sleep,
+        max_iterations=2,
+    )
+
+    assert manager.sync_updates.call_count == 1
+    captured = capsys.readouterr()
+    assert "Calendar index updated: 4 changes" in captured.err
+
+
+def test_watch_loop_polling_falls_back_when_store_missing(capsys):
+    manager = MagicMock()
+    manager.sync_updates.return_value = 0
+    sleep = MagicMock()
+
+    cli._watch_calendar_index(
+        manager,
+        interval_seconds=1,
+        store_path=Path("/missing/Calendar.sqlitedb"),
+        sleep=sleep,
+        max_iterations=2,
+    )
+
+    assert manager.sync_updates.call_count == 2
+    captured = capsys.readouterr()
+    assert "Calendar index up to date" in captured.err
+
+
+def test_run_serve_background_syncs_without_watch(monkeypatch):
+    manager = MagicMock()
+    manager.has_index.return_value = True
+    manager.sync_updates.return_value = 0
+    mcp = MagicMock()
+
+    class ImmediateThread:
+        def __init__(self, target, kwargs=None, daemon=False):
+            self.target = target
+            self.kwargs = kwargs or {}
+            self.daemon = daemon
+
+        def start(self):
+            self.target(**self.kwargs)
+
+    monkeypatch.setattr(cli.IndexManager, "get_instance", lambda: manager)
+    monkeypatch.setattr(cli.threading, "Thread", ImmediateThread)
+    monkeypatch.setitem(
+        __import__("sys").modules,
+        "apple_calendar_mcp.server",
+        MagicMock(mcp=mcp),
+    )
+
+    cli._run_serve(watch=False)
+
+    manager.sync_updates.assert_called_once()
+    mcp.run.assert_called_once()
+
+
 def test_run_serve_starts_calendar_watch_thread(monkeypatch):
     manager = MagicMock()
     manager.has_index.return_value = True
-    fake_thread = MagicMock()
-    thread_factory = MagicMock(return_value=fake_thread)
+    started_targets = []
     mcp = MagicMock()
 
+    class ImmediateThread:
+        def __init__(self, target, kwargs=None, daemon=False):
+            self.target = target
+            self.kwargs = kwargs or {}
+            self.daemon = daemon
+
+        def start(self):
+            started_targets.append(self.target)
+            self.target(**self.kwargs)
+
     monkeypatch.setattr(cli.IndexManager, "get_instance", lambda: manager)
-    monkeypatch.setattr(cli.threading, "Thread", thread_factory)
-    monkeypatch.setattr(cli, "_watch_calendar_index", MagicMock())
+    monkeypatch.setattr(cli.threading, "Thread", ImmediateThread)
+    watch = MagicMock()
+    monkeypatch.setattr(cli, "_watch_calendar_index", watch)
     monkeypatch.setitem(
         __import__("sys").modules,
         "apple_calendar_mcp.server",
@@ -61,7 +140,7 @@ def test_run_serve_starts_calendar_watch_thread(monkeypatch):
 
     cli._run_serve(watch=True, watch_interval=7)
 
-    thread_factory.assert_called_once()
-    assert thread_factory.call_args.kwargs["daemon"] is True
-    fake_thread.start.assert_called_once()
+    assert len(started_targets) == 1
+    watch.assert_called_once()
+    assert watch.call_args.kwargs["interval_seconds"] == 7
     mcp.run.assert_called_once()

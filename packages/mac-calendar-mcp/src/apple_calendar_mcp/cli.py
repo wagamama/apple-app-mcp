@@ -17,12 +17,14 @@ import sys
 import threading
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import Annotated
 
 import cyclopts
 
 from .config import get_index_path
 from .index import IndexManager
+from .index.store import DEFAULT_STORE_PATH
 
 app = cyclopts.App(
     name="mac-calendar-mcp",
@@ -48,31 +50,52 @@ def _print_json(value) -> None:
     print(json.dumps(value, indent=2, default=str))
 
 
+def _calendar_store_signature(
+    store_path: Path,
+) -> tuple[tuple[str, int, int], ...] | None:
+    paths = [
+        store_path,
+        Path(f"{store_path}-wal"),
+        Path(f"{store_path}-shm"),
+    ]
+    signature = []
+    for path in paths:
+        try:
+            stat = path.stat()
+        except FileNotFoundError:
+            continue
+        signature.append((str(path), stat.st_mtime_ns, stat.st_size))
+    if not signature:
+        return None
+    return tuple(signature)
+
+
 def _watch_calendar_index(
     manager: IndexManager,
     *,
     interval_seconds: int,
+    store_path: Path | None = DEFAULT_STORE_PATH,
     sleep: Callable[[float], None] = time.sleep,
     max_iterations: int | None = None,
 ) -> None:
     iterations = 0
+    last_signature = (
+        _calendar_store_signature(store_path)
+        if store_path is not None
+        else None
+    )
     while max_iterations is None or iterations < max_iterations:
-        start = time.time()
-        try:
-            count = manager.sync_updates()
-            elapsed = _format_time(time.time() - start)
-            if count:
-                print(
-                    f"Calendar index updated: {count} changes ({elapsed})",
-                    file=sys.stderr,
-                )
-            else:
-                print(
-                    f"Calendar index up to date ({elapsed})",
-                    file=sys.stderr,
-                )
-        except Exception as e:
-            print(f"Warning: Calendar index sync failed: {e}", file=sys.stderr)
+        should_sync = store_path is None
+        if store_path is not None:
+            current_signature = _calendar_store_signature(store_path)
+            should_sync = (
+                current_signature is None
+                or last_signature is None
+                or current_signature != last_signature
+            )
+            last_signature = current_signature
+        if should_sync:
+            _sync_calendar_index(manager, prefix="Calendar index")
 
         iterations += 1
         if max_iterations is not None and iterations >= max_iterations:
@@ -80,33 +103,61 @@ def _watch_calendar_index(
         sleep(interval_seconds)
 
 
-def _run_serve(watch: bool = False, watch_interval: int = 300) -> None:
-    from .server import mcp
-
-    manager = IndexManager.get_instance()
-    if manager.has_index() and manager.is_stale():
-        manager.sync_updates()
-    if watch:
-        if manager.has_index():
-            watch_thread = threading.Thread(
-                target=_watch_calendar_index,
-                kwargs={
-                    "manager": manager,
-                    "interval_seconds": watch_interval,
-                },
-                daemon=True,
-            )
-            watch_thread.start()
+def _sync_calendar_index(manager: IndexManager, *, prefix: str) -> None:
+    start = time.time()
+    try:
+        count = manager.sync_updates()
+        elapsed = _format_time(time.time() - start)
+        if count:
             print(
-                f"Calendar watch started ({watch_interval}s interval)",
+                f"{prefix} updated: {count} changes ({elapsed})",
                 file=sys.stderr,
             )
         else:
             print(
-                "Warning: No calendar index found. "
-                "Run 'mac-calendar-mcp index' before --watch.",
+                f"{prefix} up to date ({elapsed})",
                 file=sys.stderr,
             )
+    except Exception as e:
+        print(f"Warning: {prefix.lower()} sync failed: {e}", file=sys.stderr)
+
+
+def _run_serve(watch: bool = False, watch_interval: int = 300) -> None:
+    from .server import mcp
+
+    manager = IndexManager.get_instance()
+
+    def _background_sync() -> None:
+        _sync_calendar_index(manager, prefix="Background sync")
+        if watch:
+            if manager.has_index():
+                print(
+                    f"Calendar watch started ({watch_interval}s interval)",
+                    file=sys.stderr,
+                )
+                _watch_calendar_index(
+                    manager,
+                    interval_seconds=watch_interval,
+                )
+            else:
+                print(
+                    "Warning: No calendar index found after sync. "
+                    "Run 'mac-calendar-mcp index'.",
+                    file=sys.stderr,
+                )
+
+    sync_thread = threading.Thread(target=_background_sync, daemon=True)
+    sync_thread.start()
+    if watch:
+        if manager.has_index():
+            print(
+                "Syncing calendar index in background before watch...",
+                file=sys.stderr,
+            )
+        else:
+            print("Building calendar index in background...", file=sys.stderr)
+    else:
+        print("Syncing calendar index in background...", file=sys.stderr)
     mcp.run()
 
 

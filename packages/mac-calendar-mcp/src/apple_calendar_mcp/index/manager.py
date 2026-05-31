@@ -14,6 +14,7 @@ from apple_calendar_mcp.config import (
     get_index_max_occurrences_per_series,
     get_index_past_years,
     get_index_path,
+    get_index_staleness_hours,
 )
 from apple_calendar_mcp.executor import JXAError, execute_with_core
 
@@ -288,7 +289,11 @@ const end = new Date(
         )
 
     def is_stale(self) -> bool:
-        return False
+        stats = self.get_stats()
+        if stats.last_sync is None:
+            return True
+        age = datetime.now(UTC) - stats.last_sync
+        return age.total_seconds() / 3600 > get_index_staleness_hours()
 
     def get_stats(self) -> IndexStats:
         conn = self._connection()
@@ -300,6 +305,17 @@ const end = new Date(
             FROM occurrences
             """
         ).fetchone()
+        last_sync_row = conn.execute(
+            """
+            SELECT MAX(indexed_at) AS last_sync
+            FROM (
+                SELECT indexed_at FROM calendars
+                UNION ALL
+                SELECT indexed_at FROM events
+            )
+            """
+        ).fetchone()
+        last_sync = _parse_sqlite_timestamp(last_sync_row["last_sync"])
         db_size_mb = (
             self.db_path.stat().st_size / 1024 / 1024
             if self.db_path.exists()
@@ -324,4 +340,11 @@ const end = new Date(
             db_size_mb=db_size_mb,
             coverage_start=coverage["coverage_start"],
             coverage_end=coverage["coverage_end"],
+            last_sync=last_sync,
         )
+
+
+def _parse_sqlite_timestamp(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    return datetime.fromisoformat(value).replace(tzinfo=UTC)

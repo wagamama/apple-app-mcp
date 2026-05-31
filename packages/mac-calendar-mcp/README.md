@@ -48,14 +48,16 @@ mac-calendar-mcp index
 The index enables fast archive search and date-range reads from a local SQLite
 and FTS5 database.
 
-Run the MCP server with watch mode to periodically refresh the index while
-events change in Calendar.app:
+Run the MCP server with watch mode to keep the index current while events
+change in Calendar.app:
 
 ```bash
 mac-calendar-mcp --watch serve
 ```
 
-Watch mode defaults to a 300-second refresh interval. Override it with
+The server performs a background sync at startup. Watch mode then checks
+Calendar's local SQLite database, WAL, and SHM files every 300 seconds and
+refreshes the index when those files change. Override the interval with
 `--watch-interval SECONDS` when you need faster updates.
 
 ### Configure (Optional)
