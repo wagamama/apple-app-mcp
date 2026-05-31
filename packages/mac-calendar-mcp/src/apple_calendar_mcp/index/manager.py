@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -7,16 +8,19 @@ from sqlite3 import Connection
 from typing import Any
 
 from apple_calendar_mcp.config import (
+    get_default_calendars,
     get_index_future_years,
     get_index_max_occurrences_per_series,
     get_index_past_years,
     get_index_path,
 )
-from apple_calendar_mcp.executor import execute_with_core
+from apple_calendar_mcp.executor import JXAError, execute_with_core
 
 from .schema import SCHEMA_VERSION, create_connection, get_schema_sql
 from .search import search_events
 from .sync import sync_from_snapshot
+
+CALENDAR_EVENT_FETCH_TIMEOUT_SECONDS = 15
 
 
 @dataclass(frozen=True)
@@ -62,26 +66,64 @@ class IndexManager:
     def fetch_snapshot(self) -> dict[str, Any]:
         future_years = get_index_future_years()
         past_years = get_index_past_years()
-        if past_years is None:
-            start_expr = "new Date(1970, 0, 1)"
-        else:
-            start_expr = (
-                "new Date("
-                f"now.getFullYear() - {past_years}, "
-                "now.getMonth(), now.getDate()"
-                ")"
-            )
-        script = f"""
-const calendars = CalendarCore.listCalendars();
+        start_expr = (
+            "new Date("
+            f"now.getFullYear() - {past_years}, "
+            "now.getMonth(), now.getDate()"
+            ")"
+        )
+        window_script = f"""
 const now = new Date();
 const start = {start_expr}.toISOString();
 const end = new Date(
   now.getFullYear() + {future_years}, now.getMonth(), now.getDate()
 ).toISOString();
-const events = CalendarCore.eventsInRange(start, end, []);
-JSON.stringify({{calendars: calendars, events: events}});
 """
-        return execute_with_core(script)
+        calendars = execute_with_core(
+            "JSON.stringify(CalendarCore.listCalendars());"
+        )
+        configured_calendars = get_default_calendars()
+        if configured_calendars is not None:
+            selected_ids = set(configured_calendars)
+        else:
+            selected_ids = {
+                calendar["id"] for calendar in calendars if "id" in calendar
+            }
+
+        events: list[dict[str, Any]] = []
+        failed_jobs: list[dict[str, str]] = []
+        for calendar_id in selected_ids:
+            script = (
+                window_script
+                + "JSON.stringify(CalendarCore.eventsInRange("
+                + "start, end, "
+                + json.dumps([calendar_id])
+                + "));"
+            )
+            try:
+                events.extend(
+                    execute_with_core(
+                        script, timeout=CALENDAR_EVENT_FETCH_TIMEOUT_SECONDS
+                    )
+                )
+            except JXAError:
+                failed_jobs.append(
+                    {
+                        "job_key": f"calendar:{calendar_id}",
+                        "calendar_id": calendar_id,
+                        "error_type": "calendar_event_fetch_failed",
+                        "error_message": (
+                            "Calendar event fetch timed out or failed"
+                        ),
+                    }
+                )
+                continue
+
+        return {
+            "calendars": calendars,
+            "events": events,
+            "failed_jobs": failed_jobs,
+        }
 
     def build_from_jxa(self, progress_callback=None) -> int:
         snapshot = self.fetch_snapshot()

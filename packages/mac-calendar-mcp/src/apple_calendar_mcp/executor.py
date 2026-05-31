@@ -20,12 +20,17 @@ class JXAError(Exception):
 
 def run_jxa(script: str, timeout: int = 120) -> str:
     """Execute a raw JXA script and return stripped stdout."""
-    result = subprocess.run(
-        ["osascript", "-l", "JavaScript", "-e", script],
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-    )
+    try:
+        result = subprocess.run(
+            ["osascript", "-l", "JavaScript", "-e", script],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as e:
+        raise JXAError(
+            f"JXA script timed out after {timeout}s", e.stderr or ""
+        ) from e
     if result.returncode != 0:
         raise JXAError(f"JXA script failed: {result.stderr}", result.stderr)
     return result.stdout.strip()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -52,6 +53,18 @@ def test_run_jxa_nonzero_exit_raises_jxa_error(mock_run):
         run_jxa("bad script")
 
     assert exc.value.stderr == "execution error"
+
+
+@patch("subprocess.run")
+def test_run_jxa_timeout_raises_jxa_error(mock_run):
+    mock_run.side_effect = subprocess.TimeoutExpired(
+        cmd=["osascript"], timeout=15, stderr="timeout stderr"
+    )
+
+    with pytest.raises(JXAError, match="timed out after 15s") as exc:
+        run_jxa("slow script", timeout=15)
+
+    assert exc.value.stderr == "timeout stderr"
 
 
 class _FakeAsyncProcess:

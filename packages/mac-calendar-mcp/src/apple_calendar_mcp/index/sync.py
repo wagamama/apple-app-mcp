@@ -13,6 +13,16 @@ from .schema import (
     INSERT_SEARCH_SQL,
 )
 
+INSERT_FAILED_JOB_SQL = """
+INSERT OR REPLACE INTO failed_index_jobs
+    (job_key, calendar_id, event_id, error_type, error_message, last_seen,
+     attempt_count)
+VALUES
+    (?, ?, ?, ?, ?, datetime('now'),
+     COALESCE((SELECT attempt_count + 1 FROM failed_index_jobs
+               WHERE job_key = ?), 1))
+"""
+
 
 @dataclass(frozen=True)
 class SyncResult:
@@ -43,6 +53,7 @@ def sync_from_snapshot(
     conn.execute("DELETE FROM occurrences")
     conn.execute("DELETE FROM events")
     conn.execute("DELETE FROM calendars")
+    conn.execute("DELETE FROM failed_index_jobs")
 
     calendars = snapshot.get("calendars", [])
     for calendar in calendars:
@@ -123,5 +134,18 @@ def sync_from_snapshot(
             added += 1
         if expansion.unsupported:
             errors += 1
+    for job in snapshot.get("failed_jobs", []):
+        conn.execute(
+            INSERT_FAILED_JOB_SQL,
+            (
+                job["job_key"],
+                job.get("calendar_id"),
+                job.get("event_id"),
+                job["error_type"],
+                job["error_message"],
+                job["job_key"],
+            ),
+        )
+        errors += 1
     conn.commit()
     return SyncResult(added=added, errors=errors)

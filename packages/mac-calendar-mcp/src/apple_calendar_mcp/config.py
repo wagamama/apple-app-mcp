@@ -9,6 +9,7 @@ from pathlib import Path
 DEFAULT_INDEX_PATH = Path.home() / ".mac-calendar-mcp" / "index.db"
 CONFIG_FILE_PATH = Path.home() / ".mac-calendar-mcp" / "config.toml"
 CONFIG_SCHEMA_VERSION = 1
+DEFAULT_INDEX_PAST_YEARS = 1
 
 CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {
     "defaults": {
@@ -159,7 +160,7 @@ def get_index_past_years() -> int | None:
     val = _from_toml("index", "past_years")
     if val is not None:
         return int(val)
-    return None
+    return DEFAULT_INDEX_PAST_YEARS
 
 
 def get_index_future_years() -> int:
@@ -230,9 +231,9 @@ config_version = 1
 # Env: APPLE_CALENDAR_INDEX_STALENESS_HOURS
 # staleness_hours = 24.0
 
-# Optional historical indexing window in years. Omit for all accessible history.
+# Historical indexing window in years.
 # Env: APPLE_CALENDAR_INDEX_PAST_YEARS
-# past_years = 5
+# past_years = 1
 
 # Future expansion window in years for recurring events.
 # Env: APPLE_CALENDAR_INDEX_FUTURE_YEARS

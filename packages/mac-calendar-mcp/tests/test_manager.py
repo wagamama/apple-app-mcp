@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+from apple_calendar_mcp.executor import JXAError
 from apple_calendar_mcp.index.manager import IndexManager
 
 
@@ -81,14 +82,108 @@ def test_fetch_snapshot_uses_configured_year_windows(tmp_path):
     with (
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
+        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
         past.return_value = 3
         fut.return_value = 2
-        execute.return_value = {"calendars": [], "events": []}
+        cals.return_value = None
+        execute.side_effect = [
+            [{"id": "cal-1", "name": "Work"}],
+            [{"event_id": "event-1"}],
+        ]
 
-        assert manager.fetch_snapshot() == {"calendars": [], "events": []}
+        assert manager.fetch_snapshot() == {
+            "calendars": [{"id": "cal-1", "name": "Work"}],
+            "events": [{"event_id": "event-1"}],
+            "failed_jobs": [],
+        }
 
     script = execute.call_args.args[0]
     assert "now.getFullYear() - 3" in script
     assert "now.getFullYear() + 2" in script
+    assert '["cal-1"]' in script
+
+
+def test_fetch_snapshot_defaults_to_bounded_past_window(tmp_path):
+    db_path = tmp_path / "calendar.db"
+    manager = IndexManager(db_path=db_path)
+
+    with (
+        patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
+        patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
+        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
+    ):
+        past.return_value = 1
+        fut.return_value = 1
+        cals.return_value = None
+        execute.side_effect = [
+            [{"id": "cal-1", "name": "Work"}],
+            [],
+        ]
+
+        manager.fetch_snapshot()
+
+    script = execute.call_args.args[0]
+    assert "new Date(1970, 0, 1)" not in script
+    assert "now.getFullYear() - 1" in script
+
+
+def test_fetch_snapshot_uses_default_calendars_as_event_scope(tmp_path):
+    db_path = tmp_path / "calendar.db"
+    manager = IndexManager(db_path=db_path)
+
+    with (
+        patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
+        patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
+        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
+    ):
+        past.return_value = 1
+        fut.return_value = 1
+        cals.return_value = ["Work"]
+        execute.side_effect = [
+            [{"id": "cal-1", "name": "Work"}],
+            [{"event_id": "event-1"}],
+        ]
+
+        manager.fetch_snapshot()
+
+    assert execute.call_count == 2
+    script = execute.call_args.args[0]
+    assert '["Work"]' in script
+
+
+def test_fetch_snapshot_skips_calendar_when_event_fetch_times_out(tmp_path):
+    db_path = tmp_path / "calendar.db"
+    manager = IndexManager(db_path=db_path)
+
+    with (
+        patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
+        patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
+        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
+    ):
+        past.return_value = 1
+        fut.return_value = 1
+        cals.return_value = None
+        execute.side_effect = [
+            [{"id": "slow", "name": "Slow"}],
+            JXAError("JXA script timed out after 15s"),
+        ]
+
+        assert manager.fetch_snapshot() == {
+            "calendars": [{"id": "slow", "name": "Slow"}],
+            "events": [],
+            "failed_jobs": [
+                {
+                    "job_key": "calendar:slow",
+                    "calendar_id": "slow",
+                    "error_type": "calendar_event_fetch_failed",
+                    "error_message": (
+                        "Calendar event fetch timed out or failed"
+                    ),
+                }
+            ],
+        }

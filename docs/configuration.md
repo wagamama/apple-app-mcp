@@ -243,7 +243,7 @@ config_version = 1
 [index]
 # path = "~/.mac-calendar-mcp/index.db"
 # staleness_hours = 24.0
-# past_years = 5
+# past_years = 1
 # future_years = 1
 # max_occurrences_per_series = 10000
 ```
@@ -253,7 +253,7 @@ config_version = 1
 | `APPLE_CALENDAR_DEFAULT_CALENDARS` | _unset_ | Comma-separated default calendar names or IDs |
 | `APPLE_CALENDAR_INDEX_PATH` | `~/.mac-calendar-mcp/index.db` | SQLite index database location |
 | `APPLE_CALENDAR_INDEX_STALENESS_HOURS` | `24` | Hours before index is considered stale |
-| `APPLE_CALENDAR_INDEX_PAST_YEARS` | _unset_ | Optional historical indexing window |
+| `APPLE_CALENDAR_INDEX_PAST_YEARS` | `1` | Historical indexing window |
 | `APPLE_CALENDAR_INDEX_FUTURE_YEARS` | `1` | Future expansion window for recurring events |
 | `APPLE_CALENDAR_INDEX_MAX_OCCURRENCES_PER_SERIES` | `10000` | Safety cap for recurring-event expansion |
 

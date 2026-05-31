@@ -44,7 +44,7 @@ def _write(path: Path, body: str) -> None:
 def test_defaults(config_file):
     assert get_index_path() == config.DEFAULT_INDEX_PATH
     assert get_index_staleness_hours() == 24.0
-    assert get_index_past_years() is None
+    assert get_index_past_years() == 1
     assert get_index_future_years() == 1
     assert get_index_max_occurrences_per_series() == 10000
     assert get_default_calendars() is None

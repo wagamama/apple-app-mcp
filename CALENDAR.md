@@ -413,7 +413,7 @@ Values should resolve in this precedence order (highest first):
 |----------|----------|---------|-------------|
 | `APPLE_CALENDAR_INDEX_PATH` | `[index] path` | `~/.mac-calendar-mcp/index.db` | Index database location |
 | `APPLE_CALENDAR_INDEX_STALENESS_HOURS` | `[index] staleness_hours` | `24` | Hours before refresh |
-| `APPLE_CALENDAR_INDEX_PAST_YEARS` | `[index] past_years` | _unset_ | Optional archive backfill limit; unset means all available history |
+| `APPLE_CALENDAR_INDEX_PAST_YEARS` | `[index] past_years` | `1` | Archive backfill limit in years |
 | `APPLE_CALENDAR_INDEX_FUTURE_YEARS` | `[index] future_years` | `1` | Future expansion window for recurring events |
 | `APPLE_CALENDAR_INDEX_MAX_OCCURRENCES_PER_SERIES` | `[index] max_occurrences_per_series` | `10000` | Safety cap for recurring event expansion |
 | `APPLE_CALENDAR_DEFAULT_CALENDARS` | `[defaults] calendars` | _unset_ | Optional default calendar IDs/names for list and agenda tools |

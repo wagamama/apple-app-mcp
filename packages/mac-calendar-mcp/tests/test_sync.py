@@ -58,3 +58,40 @@ def test_sync_from_snapshot_inserts_event_occurrence_attendee(calendar_db):
     assert (
         calendar_db.execute("SELECT COUNT(*) FROM attendees").fetchone()[0] == 1
     )
+
+
+def test_sync_from_snapshot_records_failed_jobs(calendar_db):
+    snapshot = {
+        "calendars": [
+            {
+                "id": "slow",
+                "name": "Slow",
+                "color": "#ff0000",
+                "writable": True,
+                "description": "",
+            }
+        ],
+        "events": [],
+        "failed_jobs": [
+            {
+                "job_key": "calendar:slow",
+                "calendar_id": "slow",
+                "error_type": "calendar_event_fetch_failed",
+                "error_message": "Calendar event fetch timed out or failed",
+            }
+        ],
+    }
+
+    result = sync_from_snapshot(
+        calendar_db,
+        snapshot,
+        coverage_start="2026-01-01T00:00:00Z",
+        coverage_end="2027-01-01T00:00:00Z",
+        max_occurrences_per_series=100,
+    )
+
+    assert result.errors == 1
+    row = calendar_db.execute(
+        "SELECT calendar_id, error_type FROM failed_index_jobs"
+    ).fetchone()
+    assert tuple(row) == ("slow", "calendar_event_fetch_failed")
