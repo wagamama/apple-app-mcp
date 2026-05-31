@@ -1,10 +1,22 @@
-"""Command-line interface for mac-calendar-mcp."""
+"""Command-line interface for mac-calendar-mcp.
+
+Usage:
+    mac-calendar-mcp                 # Run MCP server
+    mac-calendar-mcp serve           # Run MCP server explicitly
+    mac-calendar-mcp --watch serve   # Run with periodic index updates
+    mac-calendar-mcp index           # Build index from Calendar
+    mac-calendar-mcp status          # Show index status
+    mac-calendar-mcp rebuild         # Force rebuild index
+"""
 
 from __future__ import annotations
 
 import json
 import sys
+import threading
 import time
+from collections.abc import Callable
+from typing import Annotated
 
 import cyclopts
 
@@ -35,23 +47,106 @@ def _print_json(value) -> None:
     print(json.dumps(value, indent=2, default=str))
 
 
-def _run_serve() -> None:
+def _watch_calendar_index(
+    manager: IndexManager,
+    *,
+    interval_seconds: int,
+    sleep: Callable[[float], None] = time.sleep,
+    max_iterations: int | None = None,
+) -> None:
+    iterations = 0
+    while max_iterations is None or iterations < max_iterations:
+        start = time.time()
+        try:
+            count = manager.sync_updates()
+            elapsed = _format_time(time.time() - start)
+            if count:
+                print(
+                    f"Calendar index updated: {count} changes ({elapsed})",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"Calendar index up to date ({elapsed})",
+                    file=sys.stderr,
+                )
+        except Exception as e:
+            print(f"Warning: Calendar index sync failed: {e}", file=sys.stderr)
+
+        iterations += 1
+        if max_iterations is not None and iterations >= max_iterations:
+            break
+        sleep(interval_seconds)
+
+
+def _run_serve(watch: bool = False, watch_interval: int = 300) -> None:
     from .server import mcp
 
     manager = IndexManager.get_instance()
     if manager.has_index() and manager.is_stale():
         manager.sync_updates()
+    if watch:
+        if manager.has_index():
+            watch_thread = threading.Thread(
+                target=_watch_calendar_index,
+                kwargs={
+                    "manager": manager,
+                    "interval_seconds": watch_interval,
+                },
+                daemon=True,
+            )
+            watch_thread.start()
+            print(
+                f"Calendar watch started ({watch_interval}s interval)",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                "Warning: No calendar index found. "
+                "Run 'mac-calendar-mcp index' before --watch.",
+                file=sys.stderr,
+            )
     mcp.run()
 
 
 @app.default
-def default_handler() -> None:
-    _run_serve()
+def default_handler(
+    watch: Annotated[
+        bool,
+        cyclopts.Parameter(
+            name=["--watch", "-w"],
+            help="Poll Calendar and update the index while serving",
+        ),
+    ] = False,
+    watch_interval: Annotated[
+        int,
+        cyclopts.Parameter(
+            name=["--watch-interval"],
+            help="Seconds between Calendar index refreshes in watch mode",
+        ),
+    ] = 300,
+) -> None:
+    _run_serve(watch=watch, watch_interval=watch_interval)
 
 
 @app.command
-def serve() -> None:
-    _run_serve()
+def serve(
+    watch: Annotated[
+        bool,
+        cyclopts.Parameter(
+            name=["--watch", "-w"],
+            help="Poll Calendar and update the index while serving",
+        ),
+    ] = False,
+    watch_interval: Annotated[
+        int,
+        cyclopts.Parameter(
+            name=["--watch-interval"],
+            help="Seconds between Calendar index refreshes in watch mode",
+        ),
+    ] = 300,
+) -> None:
+    _run_serve(watch=watch, watch_interval=watch_interval)
 
 
 @app.command

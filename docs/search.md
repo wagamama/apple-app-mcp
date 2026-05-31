@@ -171,7 +171,7 @@ This takes **<5s** even for 20,000+ emails (vs. 60s+ timeout with the old JXA-ba
 Enable automatic index updates with the `--watch` flag:
 
 ```bash
-mac-mail-mcp --watch
+mac-mail-mcp --watch serve
 ```
 
 The file watcher monitors `~/Library/Mail/V10/` for:
@@ -245,4 +245,3 @@ Pagination works with all scopes, date filters, and highlighting.
 | Startup sync | 60s timeout | <5s | **12x** |
 | Initial build | — | ~1–2 min | One-time |
 | Disk usage | — | ~6 KB/email | — |
-

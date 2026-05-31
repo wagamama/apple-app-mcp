@@ -29,7 +29,8 @@ Add to your MCP client:
 {
   "mcpServers": {
     "calendar": {
-      "command": "mac-calendar-mcp"
+      "command": "mac-calendar-mcp",
+      "args": ["--watch", "serve"]
     }
   }
 }
@@ -46,6 +47,16 @@ mac-calendar-mcp index
 
 The index enables fast archive search and date-range reads from a local SQLite
 and FTS5 database.
+
+Run the MCP server with watch mode to periodically refresh the index while
+events change in Calendar.app:
+
+```bash
+mac-calendar-mcp --watch serve
+```
+
+Watch mode defaults to a 300-second refresh interval. Override it with
+`--watch-interval SECONDS` when you need faster updates.
 
 ### Configure (Optional)
 

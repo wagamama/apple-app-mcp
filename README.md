@@ -30,8 +30,8 @@ mac-calendar-mcp index
 Register one or both servers:
 
 ```bash
-codex mcp add mail -- mac-mail-mcp
-codex mcp add calendar -- mac-calendar-mcp
+codex mcp add mail -- mac-mail-mcp --watch serve
+codex mcp add calendar -- mac-calendar-mcp --watch serve
 ```
 
 Confirm the registrations:
@@ -50,14 +50,19 @@ Create or edit `.mcp.json` in your project root:
 {
   "mcpServers": {
     "mail": {
-      "command": "mac-mail-mcp"
+      "command": "mac-mail-mcp",
+      "args": ["--watch", "serve"]
     },
     "calendar": {
-      "command": "mac-calendar-mcp"
+      "command": "mac-calendar-mcp",
+      "args": ["--watch", "serve"]
     }
   }
 }
 ```
+
+Watch mode keeps the indexes current while the MCP servers are running. Mail
+uses file watching; Calendar polls Calendar.app periodically.
 
 For global Claude Code configuration, put the same `mcpServers` object in
 `~/.claude/mcp.json`.

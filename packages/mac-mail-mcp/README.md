@@ -29,7 +29,8 @@ Add to your MCP client:
 {
   "mcpServers": {
     "mail": {
-      "command": "mac-mail-mcp"
+      "command": "mac-mail-mcp",
+      "args": ["--watch", "serve"]
     }
   }
 }
@@ -42,6 +43,13 @@ Add to your MCP client:
 # System Settings → Privacy & Security → Full Disk Access → Add Terminal
 
 mac-mail-mcp index --verbose
+```
+
+Run the MCP server with watch mode to keep the index current while new mail
+arrives:
+
+```bash
+mac-mail-mcp --watch serve
 ```
 
 ### Configure (Optional)
@@ -96,7 +104,7 @@ Per-client env overrides via the MCP client's launch config also work:
   "mcpServers": {
     "mail": {
       "command": "mac-mail-mcp",
-      "args": ["--watch"],
+      "args": ["--watch", "serve"],
       "env": {
         "APPLE_MAIL_DEFAULT_ACCOUNT": "Work"
       }
