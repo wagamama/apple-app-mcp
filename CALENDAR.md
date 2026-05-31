@@ -418,6 +418,10 @@ Values should resolve in this precedence order (highest first):
 | `APPLE_CALENDAR_INDEX_MAX_OCCURRENCES_PER_SERIES` | `[index] max_occurrences_per_series` | `10000` | Safety cap for recurring event expansion |
 | `APPLE_CALENDAR_DEFAULT_CALENDARS` | `[defaults] calendars` | _unset_ | Optional default calendar IDs/names for list and agenda tools |
 
+`mac-calendar-mcp init` writes a commented template to
+`~/.mac-calendar-mcp/config.toml`. Keep the template synchronized with this
+table and the config schema whenever new keys are added.
+
 ## Benchmarks
 
 Calendar benchmarks should be added after the first implementation stabilizes.

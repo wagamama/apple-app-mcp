@@ -25,6 +25,13 @@ mac-mail-mcp index --verbose
 mac-calendar-mcp index
 ```
 
+Generate optional config files:
+
+```bash
+mac-mail-mcp init
+mac-calendar-mcp init
+```
+
 ### Codex CLI
 
 Register one or both servers:

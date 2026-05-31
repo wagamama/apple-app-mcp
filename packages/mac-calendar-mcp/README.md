@@ -60,8 +60,14 @@ Watch mode defaults to a 300-second refresh interval. Override it with
 
 ### Configure (Optional)
 
+```bash
+mac-calendar-mcp init   # writes ~/.mac-calendar-mcp/config.toml
+```
+
 Mac Calendar MCP reads settings from environment variables and an optional
-TOML config file at `$HOME/.mac-calendar-mcp/config.toml`.
+TOML config file at `$HOME/.mac-calendar-mcp/config.toml`. The `init`
+command writes a commented template with every available key and refuses to
+overwrite an existing config unless `--force` is passed.
 
 Common environment variables:
 
@@ -124,6 +130,7 @@ All read tools are also available as standalone CLI commands:
 
 ```bash
 mac-calendar-mcp calendars
+mac-calendar-mcp init
 mac-calendar-mcp index
 mac-calendar-mcp status
 mac-calendar-mcp search "quarterly planning" --limit 10

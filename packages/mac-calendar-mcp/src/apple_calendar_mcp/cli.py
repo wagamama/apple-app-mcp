@@ -4,6 +4,7 @@ Usage:
     mac-calendar-mcp                 # Run MCP server
     mac-calendar-mcp serve           # Run MCP server explicitly
     mac-calendar-mcp --watch serve   # Run with periodic index updates
+    mac-calendar-mcp init            # Write config.toml template
     mac-calendar-mcp index           # Build index from Calendar
     mac-calendar-mcp status          # Show index status
     mac-calendar-mcp rebuild         # Force rebuild index
@@ -180,6 +181,40 @@ def status(verbose: bool = False) -> None:
 @app.command
 def rebuild(verbose: bool = False) -> None:
     index(verbose=verbose)
+
+
+@app.command(name="init")
+def cli_init(
+    force: Annotated[
+        bool,
+        cyclopts.Parameter(
+            name=["--force", "-f"],
+            help="Overwrite an existing config.toml",
+        ),
+    ] = False,
+) -> None:
+    """
+    Write a commented config.toml template to ~/.mac-calendar-mcp/.
+
+    The template documents every available key alongside its matching
+    environment variable. Edit and uncomment to override defaults.
+    Existing config files are not overwritten unless --force is given.
+    """
+    from .config import CONFIG_FILE_PATH, CONFIG_TEMPLATE
+
+    path = CONFIG_FILE_PATH
+
+    if path.exists() and not force:
+        print(f"Config file already exists: {path}", file=sys.stderr)
+        print("Use --force to overwrite.", file=sys.stderr)
+        sys.exit(1)
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(CONFIG_TEMPLATE)
+    path.chmod(0o600)
+
+    print(f"Wrote config template to {path}")
+    print("Edit and uncomment keys to override defaults.")
 
 
 @app.command

@@ -194,3 +194,51 @@ def get_default_calendars() -> list[str] | None:
     if val is not None:
         return list(val)
     return None
+
+
+# Template emitted by `mac-calendar-mcp init`. Every key is commented out so
+# defaults stay in effect until the user explicitly opts in.
+CONFIG_TEMPLATE = """\
+# Mac Calendar MCP - configuration
+# https://github.com/wagamama/apple-app-mcp
+#
+# Resolution order (highest precedence first):
+#   1. Environment variables  (APPLE_CALENDAR_*)
+#   2. This file
+#   3. Built-in defaults
+#
+# All keys are optional. Uncomment to override the default.
+
+config_version = 1
+
+
+[defaults]
+
+# Default calendars for tools that don't specify calendar_ids.
+# Values can be calendar names or IDs.
+# Env: APPLE_CALENDAR_DEFAULT_CALENDARS (comma-separated)
+# calendars = ["Work", "Personal"]
+
+
+[index]
+
+# Path to the SQLite search index database.
+# Env: APPLE_CALENDAR_INDEX_PATH
+# path = "~/.mac-calendar-mcp/index.db"
+
+# Hours before the index is considered stale and should be re-synced.
+# Env: APPLE_CALENDAR_INDEX_STALENESS_HOURS
+# staleness_hours = 24.0
+
+# Optional historical indexing window in years. Omit for all accessible history.
+# Env: APPLE_CALENDAR_INDEX_PAST_YEARS
+# past_years = 5
+
+# Future expansion window in years for recurring events.
+# Env: APPLE_CALENDAR_INDEX_FUTURE_YEARS
+# future_years = 1
+
+# Safety cap for recurring-event occurrence expansion per event series.
+# Env: APPLE_CALENDAR_INDEX_MAX_OCCURRENCES_PER_SERIES
+# max_occurrences_per_series = 10000
+"""
