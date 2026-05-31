@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from apple_calendar_mcp.builders import CalendarQueryBuilder
+from apple_calendar_mcp.jxa import CALENDAR_CORE_JS
 
 
 def test_list_calendars_script_uses_calendar_core():
@@ -26,3 +27,17 @@ def test_events_in_range_serializes_inputs_safely():
 def test_events_in_range_requires_start_and_end():
     with pytest.raises(ValueError, match="start and end"):
         CalendarQueryBuilder().events_in_range(start="", end="2026-01-01")
+
+
+def test_calendar_core_uses_safe_calendar_id_helper():
+    assert "safeCalendarId(calendar)" in CALENDAR_CORE_JS
+    assert ".calendarIdentifier()" not in CALENDAR_CORE_JS
+
+
+def test_calendar_core_uses_supported_calendar_date_filter_operator():
+    assert "if (!start || !end || start >= end) return [];" in CALENDAR_CORE_JS
+    assert "endDate: { _greaterThan: start }" in CALENDAR_CORE_JS
+    assert "eventOverlapsRange(event, start, end)" in CALENDAR_CORE_JS
+    assert "_and" not in CALENDAR_CORE_JS
+    assert "_lt" not in CALENDAR_CORE_JS
+    assert "_gt" not in CALENDAR_CORE_JS

@@ -21,12 +21,23 @@ const CalendarCore = {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
   },
 
+  safeCalendarId(calendar) {
+    try {
+      return String(calendar["calendarIdentifier"]());
+    } catch (e) {
+      const name = calendar.name();
+      const color = String(calendar.color());
+      const description = calendar.description() || "";
+      return `fallback:${name}:${color}:${description}`;
+    }
+  },
+
   listCalendars() {
     const calendars = Calendar.calendars();
     const results = [];
     for (let cal of calendars) {
       results.push({
-        id: cal.calendarIdentifier(),
+        id: CalendarCore.safeCalendarId(cal),
         name: cal.name(),
         color: String(cal.color()),
         writable: cal.writable(),
@@ -38,7 +49,7 @@ const CalendarCore = {
 
   calendarMatches(calendar, ids) {
     if (!ids || ids.length === 0) return true;
-    const id = calendar.calendarIdentifier();
+    const id = CalendarCore.safeCalendarId(calendar);
     const name = calendar.name();
     return ids.indexOf(id) !== -1 || ids.indexOf(name) !== -1;
   },
@@ -54,7 +65,7 @@ const CalendarCore = {
     } catch (e) {}
     return {
       event_id: event.uid(),
-      calendar_id: calendar.calendarIdentifier(),
+      calendar_id: CalendarCore.safeCalendarId(calendar),
       calendar_name: calendar.name(),
       title: event.summary() || "",
       location: event.location() || "",
@@ -73,19 +84,25 @@ const CalendarCore = {
     };
   },
 
+  eventOverlapsRange(event, start, end) {
+    const eventStart = event.startDate();
+    const eventEnd = event.endDate();
+    if (!eventStart || !eventEnd) return false;
+    return eventStart < end && eventEnd > start;
+  },
+
   eventsInRange(startValue, endValue, calendarIds) {
     const start = CalendarCore.parseDate(startValue);
     const end = CalendarCore.parseDate(endValue);
+    if (!start || !end || start >= end) return [];
     const results = [];
     for (let calendar of Calendar.calendars()) {
       if (!CalendarCore.calendarMatches(calendar, calendarIds)) continue;
       const events = calendar.events.whose({
-        _and: [
-          { startDate: { _lt: end } },
-          { endDate: { _gt: start } }
-        ]
+        endDate: { _greaterThan: start }
       })();
       for (let event of events) {
+        if (!CalendarCore.eventOverlapsRange(event, start, end)) continue;
         results.push(CalendarCore.eventToObject(calendar, event));
       }
     }
