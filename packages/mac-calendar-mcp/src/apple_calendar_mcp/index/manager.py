@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from sqlite3 import Connection
+from sqlite3 import Error as SQLiteError
 from typing import Any
 
 from apple_calendar_mcp.config import (
@@ -18,6 +19,7 @@ from apple_calendar_mcp.executor import JXAError, execute_with_core
 
 from .schema import SCHEMA_VERSION, create_connection, get_schema_sql
 from .search import search_events
+from .store import DEFAULT_STORE_PATH, fetch_snapshot_from_store
 from .sync import sync_from_snapshot
 
 CALENDAR_EVENT_FETCH_TIMEOUT_SECONDS = 15
@@ -66,6 +68,29 @@ class IndexManager:
     def fetch_snapshot(self) -> dict[str, Any]:
         future_years = get_index_future_years()
         past_years = get_index_past_years()
+        now = datetime.now(UTC)
+        start = (
+            (now - timedelta(days=365 * past_years))
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
+        end = (
+            (now + timedelta(days=365 * future_years))
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
+        configured_calendars = get_default_calendars()
+        if DEFAULT_STORE_PATH.exists():
+            try:
+                return fetch_snapshot_from_store(
+                    DEFAULT_STORE_PATH,
+                    start=start,
+                    end=end,
+                    calendar_names_or_ids=configured_calendars,
+                )
+            except (OSError, SQLiteError):
+                pass
+
         start_expr = (
             "new Date("
             f"now.getFullYear() - {past_years}, "
@@ -82,7 +107,6 @@ const end = new Date(
         calendars = execute_with_core(
             "JSON.stringify(CalendarCore.listCalendars());"
         )
-        configured_calendars = get_default_calendars()
         if configured_calendars is not None:
             selected_ids = set(configured_calendars)
         else:

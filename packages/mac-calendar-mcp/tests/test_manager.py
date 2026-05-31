@@ -83,11 +83,13 @@ def test_fetch_snapshot_uses_configured_year_windows(tmp_path):
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
         patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
         past.return_value = 3
         fut.return_value = 2
         cals.return_value = None
+        store.exists.return_value = False
         execute.side_effect = [
             [{"id": "cal-1", "name": "Work"}],
             [{"event_id": "event-1"}],
@@ -105,6 +107,71 @@ def test_fetch_snapshot_uses_configured_year_windows(tmp_path):
     assert '["cal-1"]' in script
 
 
+def test_fetch_snapshot_prefers_local_store_when_available(tmp_path):
+    db_path = tmp_path / "calendar.db"
+    manager = IndexManager(db_path=db_path)
+
+    with (
+        patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
+        patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
+        patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
+        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch(
+            "apple_calendar_mcp.index.manager.fetch_snapshot_from_store"
+        ) as fetch,
+        patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
+    ):
+        store.exists.return_value = True
+        past.return_value = 1
+        fut.return_value = 1
+        cals.return_value = ["Calendar"]
+        fetch.return_value = {"calendars": [], "events": [], "failed_jobs": []}
+
+        assert manager.fetch_snapshot() == {
+            "calendars": [],
+            "events": [],
+            "failed_jobs": [],
+        }
+
+    fetch.assert_called_once()
+    assert fetch.call_args.kwargs["calendar_names_or_ids"] == ["Calendar"]
+    execute.assert_not_called()
+
+
+def test_fetch_snapshot_falls_back_to_jxa_when_local_store_fails(tmp_path):
+    db_path = tmp_path / "calendar.db"
+    manager = IndexManager(db_path=db_path)
+
+    with (
+        patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
+        patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
+        patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
+        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch(
+            "apple_calendar_mcp.index.manager.fetch_snapshot_from_store"
+        ) as fetch,
+        patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
+    ):
+        store.exists.return_value = True
+        past.return_value = 1
+        fut.return_value = 1
+        cals.return_value = ["Calendar"]
+        fetch.side_effect = OSError("store unavailable")
+        execute.side_effect = [
+            [{"id": "Calendar", "name": "Calendar"}],
+            [{"event_id": "event-1"}],
+        ]
+
+        assert manager.fetch_snapshot() == {
+            "calendars": [{"id": "Calendar", "name": "Calendar"}],
+            "events": [{"event_id": "event-1"}],
+            "failed_jobs": [],
+        }
+
+    assert fetch.call_count == 1
+    assert execute.call_count == 2
+
+
 def test_fetch_snapshot_defaults_to_bounded_past_window(tmp_path):
     db_path = tmp_path / "calendar.db"
     manager = IndexManager(db_path=db_path)
@@ -113,11 +180,13 @@ def test_fetch_snapshot_defaults_to_bounded_past_window(tmp_path):
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
         patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
         past.return_value = 1
         fut.return_value = 1
         cals.return_value = None
+        store.exists.return_value = False
         execute.side_effect = [
             [{"id": "cal-1", "name": "Work"}],
             [],
@@ -138,11 +207,13 @@ def test_fetch_snapshot_uses_default_calendars_as_event_scope(tmp_path):
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
         patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
         past.return_value = 1
         fut.return_value = 1
         cals.return_value = ["Work"]
+        store.exists.return_value = False
         execute.side_effect = [
             [{"id": "cal-1", "name": "Work"}],
             [{"event_id": "event-1"}],
@@ -163,11 +234,13 @@ def test_fetch_snapshot_skips_calendar_when_event_fetch_times_out(tmp_path):
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
         patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
         past.return_value = 1
         fut.return_value = 1
         cals.return_value = None
+        store.exists.return_value = False
         execute.side_effect = [
             [{"id": "slow", "name": "Slow"}],
             JXAError("JXA script timed out after 15s"),
