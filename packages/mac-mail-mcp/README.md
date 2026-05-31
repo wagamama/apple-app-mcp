@@ -58,11 +58,22 @@ mac-mail-mcp --watch serve
 mac-mail-mcp init   # writes ~/.mac-mail-mcp/config.toml
 ```
 
-Writes a commented config file you can edit to set defaults like your
-primary account or mailbox. Every key has a matching `APPLE_MAIL_*` env
-var if you prefer environment-based config. See
+Writes a commented config file you can edit to set tool defaults and index
+scope separately. `[defaults]` controls what MCP tools use when an account or
+mailbox is omitted; `[index]` controls what data is stored in the local search
+index. Every key has a matching `APPLE_MAIL_*` env var if you prefer
+environment-based config. See
 [Configuration](https://wagamama.github.io/apple-app-mcp/configuration/)
 for the full schema and precedence rules.
+
+Common index-scope settings:
+
+| Variable | Purpose |
+|----------|---------|
+| `APPLE_MAIL_INDEX_ACCOUNTS` | Comma-separated account directory names to index; unset indexes all accounts. |
+| `APPLE_MAIL_INDEX_EXCLUDE_ACCOUNTS` | Comma-separated account directory names to skip. |
+| `APPLE_MAIL_INDEX_INCLUDE_MAILBOXES` | Comma-separated mailbox names to index; unset includes all non-excluded mailboxes. |
+| `APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES` | Comma-separated mailbox names to skip; defaults to `Drafts`. |
 
 ## Tools
 

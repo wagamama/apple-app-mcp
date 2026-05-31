@@ -15,7 +15,10 @@ from apple_mail_mcp.config import (
     _invalidate_config_cache,
     get_default_account,
     get_default_mailbox,
+    get_index_accounts,
+    get_index_exclude_accounts,
     get_index_exclude_mailboxes,
+    get_index_include_mailboxes,
     get_index_max_emails,
     get_index_path,
     get_index_staleness_hours,
@@ -73,6 +76,15 @@ class TestNoFile:
 
     def test_index_exclude_mailboxes(self, config_file):
         assert get_index_exclude_mailboxes() == {"Drafts"}
+
+    def test_index_accounts(self, config_file):
+        assert get_index_accounts() is None
+
+    def test_index_exclude_accounts(self, config_file):
+        assert get_index_exclude_accounts() == set()
+
+    def test_index_include_mailboxes(self, config_file):
+        assert get_index_include_mailboxes() is None
 
     def test_index_staleness_hours(self, config_file):
         assert get_index_staleness_hours() == 24.0
@@ -138,6 +150,39 @@ exclude_mailboxes = ["Drafts", "Junk"]
 """,
         )
         assert get_index_exclude_mailboxes() == {"Drafts", "Junk"}
+
+    def test_index_accounts(self, config_file):
+        _write(
+            config_file,
+            f"""
+config_version = {CONFIG_SCHEMA_VERSION}
+[index]
+accounts = ["Work"]
+""",
+        )
+        assert get_index_accounts() == {"Work"}
+
+    def test_index_exclude_accounts(self, config_file):
+        _write(
+            config_file,
+            f"""
+config_version = {CONFIG_SCHEMA_VERSION}
+[index]
+exclude_accounts = ["Personal"]
+""",
+        )
+        assert get_index_exclude_accounts() == {"Personal"}
+
+    def test_index_include_mailboxes(self, config_file):
+        _write(
+            config_file,
+            f"""
+config_version = {CONFIG_SCHEMA_VERSION}
+[index]
+include_mailboxes = ["INBOX", "Archive"]
+""",
+        )
+        assert get_index_include_mailboxes() == {"INBOX", "Archive"}
 
     def test_exclude_mailboxes_empty_list_is_explicit_empty(self, config_file):
         """Empty list in TOML means 'no exclusions', not 'use default'."""
@@ -216,6 +261,18 @@ exclude_mailboxes = ["FileOne", "FileTwo"]
             "APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES", "EnvOne,EnvTwo"
         )
         assert get_index_exclude_mailboxes() == {"EnvOne", "EnvTwo"}
+
+    def test_index_accounts(self, config_file, monkeypatch):
+        _write(
+            config_file,
+            f"""
+config_version = {CONFIG_SCHEMA_VERSION}
+[index]
+accounts = ["FromFile"]
+""",
+        )
+        monkeypatch.setenv("APPLE_MAIL_INDEX_ACCOUNTS", "EnvOne,EnvTwo")
+        assert get_index_accounts() == {"EnvOne", "EnvTwo"}
 
     def test_env_empty_string_means_explicit_empty(
         self, config_file, monkeypatch

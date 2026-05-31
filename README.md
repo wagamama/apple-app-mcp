@@ -32,6 +32,11 @@ mac-mail-mcp init
 mac-calendar-mcp init
 ```
 
+Index scope is configured separately from tool defaults. Use `[index]`
+settings such as Mail `accounts` or Calendar `calendars` to control what is
+stored locally; use `[defaults]` settings to control what MCP tools use when
+the caller omits a scope.
+
 ### Codex CLI
 
 Register one or both servers:

@@ -116,7 +116,7 @@ def test_fetch_snapshot_uses_configured_year_windows(tmp_path):
     with (
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
-        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.get_index_calendars") as cals,
         patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
@@ -149,7 +149,7 @@ def test_fetch_snapshot_prefers_local_store_when_available(tmp_path):
         patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
-        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.get_index_calendars") as cals,
         patch(
             "apple_calendar_mcp.index.manager.fetch_snapshot_from_store"
         ) as fetch,
@@ -180,7 +180,7 @@ def test_fetch_snapshot_falls_back_to_jxa_when_local_store_fails(tmp_path):
         patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
-        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.get_index_calendars") as cals,
         patch(
             "apple_calendar_mcp.index.manager.fetch_snapshot_from_store"
         ) as fetch,
@@ -213,7 +213,7 @@ def test_fetch_snapshot_defaults_to_bounded_past_window(tmp_path):
     with (
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
-        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.get_index_calendars") as cals,
         patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
@@ -233,14 +233,14 @@ def test_fetch_snapshot_defaults_to_bounded_past_window(tmp_path):
     assert "now.getFullYear() - 1" in script
 
 
-def test_fetch_snapshot_uses_default_calendars_as_event_scope(tmp_path):
+def test_fetch_snapshot_uses_index_calendars_as_event_scope(tmp_path):
     db_path = tmp_path / "calendar.db"
     manager = IndexManager(db_path=db_path)
 
     with (
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
-        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.get_index_calendars") as cals,
         patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
@@ -267,7 +267,7 @@ def test_fetch_snapshot_skips_calendar_when_event_fetch_times_out(tmp_path):
     with (
         patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
         patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
-        patch("apple_calendar_mcp.index.manager.get_default_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.get_index_calendars") as cals,
         patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):

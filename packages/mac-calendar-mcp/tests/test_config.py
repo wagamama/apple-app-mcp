@@ -12,6 +12,7 @@ from apple_calendar_mcp.config import (
     ConfigError,
     _invalidate_config_cache,
     get_default_calendars,
+    get_index_calendars,
     get_index_future_years,
     get_index_max_occurrences_per_series,
     get_index_past_years,
@@ -48,6 +49,7 @@ def test_defaults(config_file):
     assert get_index_future_years() == 1
     assert get_index_max_occurrences_per_series() == 10000
     assert get_default_calendars() is None
+    assert get_index_calendars() is None
 
 
 def test_file_values(config_file):
@@ -63,10 +65,12 @@ staleness_hours = 12
 past_years = 5
 future_years = 2
 max_occurrences_per_series = 500
+calendars = ["Calendar"]
 """,
     )
 
     assert get_default_calendars() == ["Work", "Personal"]
+    assert get_index_calendars() == ["Calendar"]
     assert get_index_path() == Path("~/calendar.db").expanduser()
     assert get_index_staleness_hours() == 12.0
     assert get_index_past_years() == 5
@@ -92,6 +96,12 @@ def test_csv_env_default_calendars(monkeypatch, config_file):
     monkeypatch.setenv("APPLE_CALENDAR_DEFAULT_CALENDARS", "Work,Personal")
 
     assert get_default_calendars() == ["Work", "Personal"]
+
+
+def test_csv_env_index_calendars(monkeypatch, config_file):
+    monkeypatch.setenv("APPLE_CALENDAR_INDEX_CALENDARS", "Calendar,Home")
+
+    assert get_index_calendars() == ["Calendar", "Home"]
 
 
 def test_bad_type_raises(config_file):

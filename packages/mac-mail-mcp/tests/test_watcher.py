@@ -220,6 +220,33 @@ class TestPathParsing:
         )
         assert m is not None
 
+    def test_scope_filter_accepts_configured_account_and_mailbox(self):
+        watcher = IndexWatcher.__new__(IndexWatcher)
+        watcher._accounts = {"acc"}
+        watcher._exclude_accounts = set()
+        watcher._include_mailboxes = {"INBOX"}
+        watcher._exclude_mailboxes = {"Drafts"}
+
+        assert watcher._in_index_scope("acc", "INBOX") is True
+
+    def test_scope_filter_rejects_account_outside_index_scope(self):
+        watcher = IndexWatcher.__new__(IndexWatcher)
+        watcher._accounts = {"work"}
+        watcher._exclude_accounts = set()
+        watcher._include_mailboxes = None
+        watcher._exclude_mailboxes = set()
+
+        assert watcher._in_index_scope("personal", "INBOX") is False
+
+    def test_scope_filter_rejects_excluded_mailbox(self):
+        watcher = IndexWatcher.__new__(IndexWatcher)
+        watcher._accounts = None
+        watcher._exclude_accounts = set()
+        watcher._include_mailboxes = None
+        watcher._exclude_mailboxes = {"Drafts"}
+
+        assert watcher._in_index_scope("acc", "Drafts") is False
+
 
 class TestPendingLimits:
     """Watcher should enforce memory safety limits."""

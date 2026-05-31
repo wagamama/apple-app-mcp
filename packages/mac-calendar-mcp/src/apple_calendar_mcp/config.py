@@ -18,6 +18,7 @@ CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {
     "index": {
         "path": (str,),
         "staleness_hours": (int, float),
+        "calendars": (list,),
         "past_years": (int,),
         "future_years": (int,),
         "max_occurrences_per_series": (int,),
@@ -185,13 +186,31 @@ def get_index_max_occurrences_per_series() -> int:
     return 10000
 
 
+def _csv_env(name: str) -> list[str] | None:
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    values = [value.strip() for value in raw.split(",") if value.strip()]
+    return values or []
+
+
 def get_default_calendars() -> list[str] | None:
     """Return optional default calendar names or ids."""
-    env = os.environ.get("APPLE_CALENDAR_DEFAULT_CALENDARS")
+    env = _csv_env("APPLE_CALENDAR_DEFAULT_CALENDARS")
     if env is not None:
-        calendars = [c.strip() for c in env.split(",") if c.strip()]
-        return calendars or []
+        return env
     val = _from_toml("defaults", "calendars")
+    if val is not None:
+        return list(val)
+    return None
+
+
+def get_index_calendars() -> list[str] | None:
+    """Return optional calendar names or ids to include in the index."""
+    env = _csv_env("APPLE_CALENDAR_INDEX_CALENDARS")
+    if env is not None:
+        return env
+    val = _from_toml("index", "calendars")
     if val is not None:
         return list(val)
     return None
@@ -230,6 +249,12 @@ config_version = 1
 # Hours before the index is considered stale and should be re-synced.
 # Env: APPLE_CALENDAR_INDEX_STALENESS_HOURS
 # staleness_hours = 24.0
+
+# Calendars to include in the local index. When unset, all calendars are
+# indexed. This is separate from [defaults].calendars, which only controls
+# tool defaults when calendar_ids is omitted.
+# Env: APPLE_CALENDAR_INDEX_CALENDARS (comma-separated)
+# calendars = ["Work", "Personal"]
 
 # Historical indexing window in years.
 # Env: APPLE_CALENDAR_INDEX_PAST_YEARS

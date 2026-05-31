@@ -9,7 +9,7 @@ from sqlite3 import Error as SQLiteError
 from typing import Any
 
 from apple_calendar_mcp.config import (
-    get_default_calendars,
+    get_index_calendars,
     get_index_future_years,
     get_index_max_occurrences_per_series,
     get_index_past_years,
@@ -80,7 +80,7 @@ class IndexManager:
             .isoformat()
             .replace("+00:00", "Z")
         )
-        configured_calendars = get_default_calendars()
+        configured_calendars = get_index_calendars()
         if DEFAULT_STORE_PATH.exists():
             try:
                 return fetch_snapshot_from_store(

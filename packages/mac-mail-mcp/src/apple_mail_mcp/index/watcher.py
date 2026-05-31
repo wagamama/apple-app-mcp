@@ -20,6 +20,12 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from ..config import (
+    get_index_accounts,
+    get_index_exclude_accounts,
+    get_index_exclude_mailboxes,
+    get_index_include_mailboxes,
+)
 from .disk import find_mail_directory, parse_emlx
 from .schema import (
     CLEAR_PARSE_FAILURE_SQL,
@@ -77,6 +83,10 @@ class IndexWatcher:
         self.db_path = db_path
         self.on_update = on_update
         self.debounce_ms = debounce_ms
+        self._accounts = get_index_accounts()
+        self._exclude_accounts = get_index_exclude_accounts()
+        self._include_mailboxes = get_index_include_mailboxes()
+        self._exclude_mailboxes = get_index_exclude_mailboxes()
 
         self._mail_dir: Path | None = None
         self._stop_event = threading.Event()
@@ -189,6 +199,8 @@ class IndexWatcher:
                     continue
 
                 account, mailbox, message_id = parsed
+                if not self._in_index_scope(account, mailbox):
+                    continue
                 key = (account, mailbox, message_id)
 
                 with self._pending_lock:
@@ -240,6 +252,20 @@ class IndexWatcher:
         mailbox_name = mailbox_dir
 
         return account_name, mailbox_name, message_id
+
+    def _in_index_scope(self, account: str, mailbox: str) -> bool:
+        if self._accounts is not None and account not in self._accounts:
+            return False
+        if self._exclude_accounts and account in self._exclude_accounts:
+            return False
+        if (
+            self._include_mailboxes is not None
+            and mailbox not in self._include_mailboxes
+        ):
+            return False
+        if self._exclude_mailboxes and mailbox in self._exclude_mailboxes:
+            return False
+        return True
 
     def _process_pending(self) -> None:
         """Process pending adds and deletes."""

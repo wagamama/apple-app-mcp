@@ -7,6 +7,7 @@ from fastmcp import FastMCP
 from typing_extensions import TypedDict
 
 from .builders import CalendarQueryBuilder
+from .config import get_default_calendars
 from .executor import execute_with_core_async
 from .index import IndexManager
 
@@ -23,6 +24,12 @@ class CalendarSummary(TypedDict, total=False):
 
 def _get_index_manager() -> IndexManager:
     return IndexManager.get_instance()
+
+
+def _calendar_ids_or_default(
+    calendar_ids: list[str] | None,
+) -> list[str] | None:
+    return calendar_ids if calendar_ids is not None else get_default_calendars()
 
 
 @mcp.tool
@@ -45,7 +52,7 @@ async def get_events(
     return manager.events(
         start=start,
         end=end,
-        calendar_ids=calendar_ids,
+        calendar_ids=_calendar_ids_or_default(calendar_ids),
         limit=limit,
         offset=offset,
     )
@@ -93,7 +100,7 @@ async def search_events(
         query,
         start=start,
         end=end,
-        calendar_ids=calendar_ids,
+        calendar_ids=_calendar_ids_or_default(calendar_ids),
         fields=fields,
         limit=limit,
         offset=offset,
@@ -113,7 +120,7 @@ async def get_agenda(
         manager.get_agenda,
         start=start,
         days=days,
-        calendar_ids=calendar_ids,
+        calendar_ids=_calendar_ids_or_default(calendar_ids),
     )
 
 

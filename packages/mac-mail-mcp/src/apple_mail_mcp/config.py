@@ -27,6 +27,7 @@ CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {
     },
     "index": {
         "path": (str,),
+        "accounts": (list,),
         "max_emails": (int,),
         "staleness_hours": (int, float),
         "exclude_mailboxes": (list,),
@@ -244,6 +245,63 @@ def get_index_max_emails() -> int | None:
     return None
 
 
+def _csv_set_env(name: str) -> set[str] | None:
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    return {value.strip() for value in raw.split(",") if value.strip()}
+
+
+def get_index_accounts() -> set[str] | None:
+    """
+    Get accounts to include in indexing.
+
+    Resolution: ``APPLE_MAIL_INDEX_ACCOUNTS`` env (CSV; empty string means no
+    accounts), then ``[index] accounts`` in ``config.toml``, then ``None``
+    (all accounts).
+    """
+    env = _csv_set_env("APPLE_MAIL_INDEX_ACCOUNTS")
+    if env is not None:
+        return env
+    val = _from_toml("index", "accounts")
+    if val is not None:
+        return {account for account in val if account}
+    return None
+
+
+def get_index_exclude_accounts() -> set[str]:
+    """
+    Get accounts to exclude from indexing.
+
+    Resolution: ``APPLE_MAIL_INDEX_EXCLUDE_ACCOUNTS`` env (CSV), then
+    ``[index] exclude_accounts`` in ``config.toml``, then empty set.
+    """
+    env = _csv_set_env("APPLE_MAIL_INDEX_EXCLUDE_ACCOUNTS")
+    if env is not None:
+        return env
+    val = _from_toml("index", "exclude_accounts")
+    if val is not None:
+        return {account for account in val if account}
+    return set()
+
+
+def get_index_include_mailboxes() -> set[str] | None:
+    """
+    Get mailboxes to include in indexing.
+
+    Resolution: ``APPLE_MAIL_INDEX_INCLUDE_MAILBOXES`` env (CSV; empty string
+    means no mailboxes), then ``[index] include_mailboxes`` in ``config.toml``,
+    then ``None`` (all mailboxes not excluded).
+    """
+    env = _csv_set_env("APPLE_MAIL_INDEX_INCLUDE_MAILBOXES")
+    if env is not None:
+        return env
+    val = _from_toml("index", "include_mailboxes")
+    if val is not None:
+        return {mailbox for mailbox in val if mailbox}
+    return None
+
+
 def get_index_exclude_mailboxes() -> set[str]:
     """
     Get mailboxes to exclude from indexing.
@@ -252,9 +310,9 @@ def get_index_exclude_mailboxes() -> set[str]:
     = no exclusions), then ``[index] exclude_mailboxes`` in ``config.toml``
     (empty list = no exclusions), then ``{"Drafts"}``.
     """
-    env = os.environ.get("APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES")
+    env = _csv_set_env("APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES")
     if env is not None:
-        return {m.strip() for m in env.split(",") if m.strip()}
+        return env
     val = _from_toml("index", "exclude_mailboxes")
     if val is not None:
         return {m for m in val if m}
@@ -347,6 +405,21 @@ config_version = 1
 # Maximum emails to index per mailbox. Omit for uncapped (default).
 # Env: APPLE_MAIL_INDEX_MAX_EMAILS
 # max_emails = 5000
+
+# Accounts to include in the local index. When unset, all accounts are
+# indexed. This is separate from [defaults].account, which only controls
+# tool defaults when account is omitted.
+# Env: APPLE_MAIL_INDEX_ACCOUNTS (comma-separated)
+# accounts = ["Personal"]
+
+# Accounts to skip during indexing.
+# Env: APPLE_MAIL_INDEX_EXCLUDE_ACCOUNTS (comma-separated)
+# exclude_accounts = []
+
+# Mailboxes to include during indexing. When unset, all mailboxes not excluded
+# are indexed.
+# Env: APPLE_MAIL_INDEX_INCLUDE_MAILBOXES (comma-separated)
+# include_mailboxes = ["INBOX", "Archive"]
 
 # Hours before the index is considered stale and should be re-synced.
 # Env: APPLE_MAIL_INDEX_STALENESS_HOURS

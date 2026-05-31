@@ -1032,6 +1032,9 @@ def _extract_links_from_message(
 
 def scan_emlx_files(
     mail_dir: Path,
+    accounts: set[str] | None = None,
+    exclude_accounts: set[str] | None = None,
+    include_mailboxes: set[str] | None = None,
     exclude_mailboxes: set[str] | None = None,
 ) -> Iterator[Path]:
     """
@@ -1039,12 +1042,30 @@ def scan_emlx_files(
 
     Args:
         mail_dir: Path to ~/Library/Mail/V10/
+        accounts: Account directory names to include. Uses
+            APPLE_MAIL_INDEX_ACCOUNTS config if None.
+        exclude_accounts: Account directory names to skip. Uses
+            APPLE_MAIL_INDEX_EXCLUDE_ACCOUNTS config if None.
+        include_mailboxes: Mailbox names to include. Uses
+            APPLE_MAIL_INDEX_INCLUDE_MAILBOXES config if None.
         exclude_mailboxes: Mailbox names to skip (e.g. {"Drafts"}).
             Uses APPLE_MAIL_INDEX_EXCLUDE_MAILBOXES config if None.
 
     Yields:
         Paths to .emlx files
     """
+    if accounts is None:
+        from ..config import get_index_accounts
+
+        accounts = get_index_accounts()
+    if exclude_accounts is None:
+        from ..config import get_index_exclude_accounts
+
+        exclude_accounts = get_index_exclude_accounts()
+    if include_mailboxes is None:
+        from ..config import get_index_include_mailboxes
+
+        include_mailboxes = get_index_include_mailboxes()
     if exclude_mailboxes is None:
         from ..config import get_index_exclude_mailboxes
 
@@ -1052,16 +1073,25 @@ def scan_emlx_files(
 
     # .emlx files are in: account-uuid/mailbox.mbox/Data/x/y/Messages/
     for emlx_path in mail_dir.rglob("*.emlx"):
-        # Skip excluded mailboxes by checking .mbox dir name
-        if exclude_mailboxes:
-            parts = emlx_path.relative_to(mail_dir).parts
-            if len(parts) > 1:
-                mbox_dir = parts[1]
-                mbox_name = (
-                    mbox_dir[:-5] if mbox_dir.endswith(".mbox") else mbox_dir
-                )
-                if mbox_name in exclude_mailboxes:
-                    continue
+        parts = emlx_path.relative_to(mail_dir).parts
+        account_name = parts[0] if parts else ""
+        mailbox_name = ""
+        if len(parts) > 1:
+            mbox_dir = parts[1]
+            mailbox_name = (
+                mbox_dir[:-5] if mbox_dir.endswith(".mbox") else mbox_dir
+            )
+        if accounts is not None and account_name not in accounts:
+            continue
+        if exclude_accounts and account_name in exclude_accounts:
+            continue
+        if (
+            include_mailboxes is not None
+            and mailbox_name not in include_mailboxes
+        ):
+            continue
+        if exclude_mailboxes and mailbox_name in exclude_mailboxes:
+            continue
 
         yield emlx_path
 

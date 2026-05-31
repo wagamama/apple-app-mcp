@@ -77,9 +77,13 @@ Common environment variables:
 |----------|---------|
 | `APPLE_CALENDAR_INDEX_PATH` | Override the SQLite index location. |
 | `APPLE_CALENDAR_INDEX_STALENESS_HOURS` | Hours before an index is considered stale. |
+| `APPLE_CALENDAR_INDEX_CALENDARS` | Comma-separated calendar names or IDs to index; unset indexes all calendars. |
 | `APPLE_CALENDAR_INDEX_PAST_YEARS` | Historical indexing window; defaults to 1 year. |
 | `APPLE_CALENDAR_INDEX_FUTURE_YEARS` | Limit future indexing window. |
-| `APPLE_CALENDAR_DEFAULT_CALENDARS` | Comma-separated default calendar names or IDs. |
+| `APPLE_CALENDAR_DEFAULT_CALENDARS` | Comma-separated tool-default calendar names or IDs when `calendar_ids` is omitted. |
+
+`[defaults].calendars` only controls MCP tool defaults. `[index].calendars`
+controls which calendars are stored in the local search index.
 
 ## Tools
 

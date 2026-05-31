@@ -372,6 +372,52 @@ class TestScanExcludesDrafts:
         files = list(scan_emlx_files(mail_dir, exclude_mailboxes=set()))
         assert len(files) == 2
 
+    def test_scan_limits_accounts(self, tmp_path: Path):
+        from apple_mail_mcp.index.disk import scan_emlx_files
+
+        mail_dir = tmp_path / "V10"
+        work = mail_dir / "work" / "INBOX.mbox" / "Data" / "Messages"
+        personal = mail_dir / "personal" / "INBOX.mbox" / "Data" / "Messages"
+        work.mkdir(parents=True)
+        personal.mkdir(parents=True)
+
+        (work / "1.emlx").write_bytes(b"test")
+        (personal / "2.emlx").write_bytes(b"test")
+
+        files = list(
+            scan_emlx_files(
+                mail_dir,
+                accounts={"work"},
+                exclude_mailboxes=set(),
+            )
+        )
+
+        assert len(files) == 1
+        assert "work" in str(files[0])
+
+    def test_scan_limits_include_mailboxes(self, tmp_path: Path):
+        from apple_mail_mcp.index.disk import scan_emlx_files
+
+        mail_dir = tmp_path / "V10"
+        inbox = mail_dir / "acc" / "INBOX.mbox" / "Data" / "Messages"
+        archive = mail_dir / "acc" / "Archive.mbox" / "Data" / "Messages"
+        inbox.mkdir(parents=True)
+        archive.mkdir(parents=True)
+
+        (inbox / "1.emlx").write_bytes(b"test")
+        (archive / "2.emlx").write_bytes(b"test")
+
+        files = list(
+            scan_emlx_files(
+                mail_dir,
+                include_mailboxes={"Archive"},
+                exclude_mailboxes=set(),
+            )
+        )
+
+        assert len(files) == 1
+        assert "Archive" in str(files[0])
+
 
 class TestExtractAttachments:
     """Tests for attachment metadata extraction."""
