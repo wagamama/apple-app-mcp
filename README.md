@@ -63,11 +63,11 @@ Create or edit `.mcp.json` in your project root:
   "mcpServers": {
     "mail": {
       "command": "mac-mail-mcp",
-      "args": ["--watch", "serve"]
+      "args": ["serve", "--watch"]
     },
     "calendar": {
       "command": "mac-calendar-mcp",
-      "args": ["--watch", "serve"]
+      "args": ["serve", "--watch"]
     }
   }
 }
@@ -119,6 +119,13 @@ repository must have Pages configured once in **Settings -> Pages -> Build and
 deployment -> Source: GitHub Actions**. The workflow deploys the built artifact;
 it does not try to create or enable the Pages site because GitHub rejects that
 operation from the default workflow token in some repositories.
+
+## Acknowledgements
+
+This codebase is derived from
+[`imdinu/apple-mail-mcp`](https://github.com/imdinu/apple-mail-mcp). Credit and
+thanks go to the original authors and contributors for the Apple Mail MCP
+foundation this repository builds on.
 
 ## License
 
