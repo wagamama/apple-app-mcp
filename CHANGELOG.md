@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- Corrected MCP watch-mode examples to use `serve --watch` command order for
+  both Mail and Calendar servers. This is a docs-only correction on `main`;
+  the `v0.5.8` release tag remains on the already-published PyPI artifact
+  commit.
+
+## [0.5.8] - 2026-05-31
+
+### Fixed
+
+- **Mail index account scope now accepts friendly account names** — disk
+  indexing and `serve --watch` expand `[index] accounts` and
+  `[index] exclude_accounts` values from Mail account names to the on-disk
+  account UUIDs used under `~/Library/Mail/V*/`. This fixes scoped indexes
+  reporting `Indexed 0 emails` when users configured an account name instead
+  of a UUID. Unknown values are preserved so direct UUID filters keep working.
+
+### Changed
+
+- Bumped both PyPI packages and MCP registry manifests to `0.5.8`.
+
 ## [0.4.0] - 2026-05-28
 
 ### Performance
