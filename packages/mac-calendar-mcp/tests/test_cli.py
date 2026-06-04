@@ -144,3 +144,32 @@ def test_run_serve_starts_calendar_watch_thread(monkeypatch):
     watch.assert_called_once()
     assert watch.call_args.kwargs["interval_seconds"] == 7
     mcp.run.assert_called_once()
+
+
+def test_run_serve_uses_hourly_watch_interval_by_default(monkeypatch):
+    manager = MagicMock()
+    manager.has_index.return_value = True
+    mcp = MagicMock()
+
+    class ImmediateThread:
+        def __init__(self, target, kwargs=None, daemon=False):
+            self.target = target
+            self.kwargs = kwargs or {}
+            self.daemon = daemon
+
+        def start(self):
+            self.target(**self.kwargs)
+
+    monkeypatch.setattr(cli.IndexManager, "get_instance", lambda: manager)
+    monkeypatch.setattr(cli.threading, "Thread", ImmediateThread)
+    watch = MagicMock()
+    monkeypatch.setattr(cli, "_watch_calendar_index", watch)
+    monkeypatch.setitem(
+        __import__("sys").modules,
+        "apple_calendar_mcp.server",
+        MagicMock(mcp=mcp),
+    )
+
+    cli._run_serve(watch=True)
+
+    assert watch.call_args.kwargs["interval_seconds"] == 3600

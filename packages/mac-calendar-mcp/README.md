@@ -56,9 +56,9 @@ mac-calendar-mcp serve --watch
 ```
 
 The server performs a background sync at startup. Watch mode then checks
-Calendar's local SQLite database, WAL, and SHM files every 300 seconds and
+Calendar's local SQLite database, WAL, and SHM files every 3600 seconds and
 refreshes the index when those files change. Override the interval with
-`--watch-interval SECONDS` when you need faster updates.
+`--watch-interval SECONDS` when you need faster or slower updates.
 
 ### Configure (Optional)
 

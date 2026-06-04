@@ -78,8 +78,8 @@ mac-mail-mcp serve --watch
 mac-calendar-mcp serve --watch
 ```
 
-Calendar defaults to a 300-second refresh interval. Override it when needed:
+Calendar defaults to a 3600-second refresh interval. Override it when needed:
 
 ```bash
-mac-calendar-mcp --watch --watch-interval 60 serve
+mac-calendar-mcp serve --watch --watch-interval 7200
 ```

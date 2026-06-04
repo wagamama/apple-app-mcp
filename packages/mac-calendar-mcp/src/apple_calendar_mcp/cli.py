@@ -26,6 +26,8 @@ from .config import get_index_path
 from .index import IndexManager
 from .index.store import DEFAULT_STORE_PATH
 
+DEFAULT_WATCH_INTERVAL_SECONDS = 3600
+
 app = cyclopts.App(
     name="mac-calendar-mcp",
     help="Read-only MCP server for Apple Calendar with indexed search.",
@@ -122,7 +124,10 @@ def _sync_calendar_index(manager: IndexManager, *, prefix: str) -> None:
         print(f"Warning: {prefix.lower()} sync failed: {e}", file=sys.stderr)
 
 
-def _run_serve(watch: bool = False, watch_interval: int = 300) -> None:
+def _run_serve(
+    watch: bool = False,
+    watch_interval: int = DEFAULT_WATCH_INTERVAL_SECONDS,
+) -> None:
     from .server import mcp
 
     manager = IndexManager.get_instance()
@@ -176,7 +181,7 @@ def default_handler(
             name=["--watch-interval"],
             help="Seconds between Calendar index refreshes in watch mode",
         ),
-    ] = 300,
+    ] = DEFAULT_WATCH_INTERVAL_SECONDS,
 ) -> None:
     _run_serve(watch=watch, watch_interval=watch_interval)
 
@@ -196,7 +201,7 @@ def serve(
             name=["--watch-interval"],
             help="Seconds between Calendar index refreshes in watch mode",
         ),
-    ] = 300,
+    ] = DEFAULT_WATCH_INTERVAL_SECONDS,
 ) -> None:
     _run_serve(watch=watch, watch_interval=watch_interval)
 

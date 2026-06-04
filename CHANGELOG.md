@@ -7,12 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.9] - 2026-06-04
+
+### Changed
+
+- Increased the default `mac-calendar-mcp serve --watch` refresh interval from
+  300 seconds to 3600 seconds. Calendar watch mode still performs a startup sync
+  and still refreshes when Calendar's local SQLite files change, but the less
+  frequent polling reduces background contention with Calendar.app during normal
+  use. Use `--watch-interval SECONDS` for faster or slower refreshes.
+- Bumped both PyPI packages and MCP registry manifests to `0.5.9`.
+
 ### Documentation
 
 - Corrected MCP watch-mode examples to use `serve --watch` command order for
-  both Mail and Calendar servers. This is a docs-only correction on `main`;
-  the `v0.5.8` release tag remains on the already-published PyPI artifact
-  commit.
+  both Mail and Calendar servers.
 
 ## [0.5.8] - 2026-05-31
 
