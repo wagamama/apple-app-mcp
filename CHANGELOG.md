@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.10] - 2026-06-04
+
+### Fixed
+
+- **Mail JXA now resolves Mail.app by absolute path before name lookup** —
+  `Application("Mail")` can fail with `Application can't be found` in some
+  shell and Codex execution contexts even when `/System/Applications/Mail.app`
+  exists. The Mail JXA core now tries `/System/Applications/Mail.app`,
+  `/Applications/Mail.app`, then the legacy `"Mail"` name lookup. This fixes
+  commands such as `mac-mail-mcp accounts` in affected contexts.
+
+### Changed
+
+- Bumped both PyPI packages and MCP registry manifests to `0.5.10`.
+
 ## [0.5.9] - 2026-06-04
 
 ### Changed
