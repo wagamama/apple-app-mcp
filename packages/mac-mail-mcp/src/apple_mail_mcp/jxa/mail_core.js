@@ -6,7 +6,26 @@
  * error handling, account/mailbox resolution, and batch fetching.
  */
 
-const Mail = Application("Mail");
+function getMailApplication() {
+    const candidates = [
+        "/System/Applications/Mail.app",
+        "/Applications/Mail.app",
+        "Mail",
+    ];
+    let lastError = null;
+    for (const candidate of candidates) {
+        try {
+            const app = Application(candidate);
+            app.name();
+            return app;
+        } catch (e) {
+            lastError = e;
+        }
+    }
+    throw lastError || new Error("Mail application not found");
+}
+
+const Mail = getMailApplication();
 
 const MailCore = {
     /**

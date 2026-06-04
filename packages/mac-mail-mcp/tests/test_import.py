@@ -21,3 +21,10 @@ def test_mail_distribution_exposes_console_scripts():
     assert dist.metadata["Name"] == "mac-mail-mcp"
     assert set(scripts) == {"mac-mail-mcp"}
     assert scripts["mac-mail-mcp"] == "apple_mail_mcp:main"
+
+
+def test_mail_core_uses_absolute_mail_app_path():
+    from apple_mail_mcp.jxa import MAIL_CORE_JS
+
+    assert '"/System/Applications/Mail.app"' in MAIL_CORE_JS
+    assert '"/Applications/Mail.app"' in MAIL_CORE_JS
