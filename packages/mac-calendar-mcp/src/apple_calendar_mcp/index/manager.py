@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -24,6 +25,7 @@ from .store import DEFAULT_STORE_PATH, fetch_snapshot_from_store
 from .sync import sync_from_snapshot
 
 CALENDAR_EVENT_FETCH_TIMEOUT_SECONDS = 15
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -89,8 +91,14 @@ class IndexManager:
                     end=end,
                     calendar_names_or_ids=configured_calendars,
                 )
-            except (OSError, SQLiteError):
-                pass
+            except (OSError, SQLiteError) as exc:
+                logger.warning(
+                    "Falling back to Calendar JXA after local store read "
+                    "failed for %s: %s: %s",
+                    DEFAULT_STORE_PATH,
+                    type(exc).__name__,
+                    exc,
+                )
 
         start_expr = (
             "new Date("
@@ -114,7 +122,6 @@ const end = new Date(
             selected_ids = {
                 calendar["id"] for calendar in calendars if "id" in calendar
             }
-
         events: list[dict[str, Any]] = []
         failed_jobs: list[dict[str, str]] = []
         for calendar_id in selected_ids:
@@ -131,14 +138,20 @@ const end = new Date(
                         script, timeout=CALENDAR_EVENT_FETCH_TIMEOUT_SECONDS
                     )
                 )
-            except JXAError:
+            except JXAError as exc:
+                calendar_name = _calendar_name_for_id(
+                    calendars,
+                    calendar_id,
+                )
                 failed_jobs.append(
                     {
                         "job_key": f"calendar:{calendar_id}",
                         "calendar_id": calendar_id,
                         "error_type": "calendar_event_fetch_failed",
-                        "error_message": (
-                            "Calendar event fetch timed out or failed"
+                        "error_message": _format_calendar_fetch_error(
+                            calendar_id,
+                            calendar_name,
+                            exc,
                         ),
                     }
                 )
@@ -348,3 +361,33 @@ def _parse_sqlite_timestamp(value: str | None) -> datetime | None:
     if not value:
         return None
     return datetime.fromisoformat(value).replace(tzinfo=UTC)
+
+
+def _calendar_name_for_id(
+    calendars: list[dict[str, Any]],
+    calendar_id: str,
+) -> str | None:
+    for calendar in calendars:
+        if calendar.get("id") == calendar_id:
+            name = calendar.get("name")
+            return name if isinstance(name, str) else None
+    for calendar in calendars:
+        if calendar.get("name") == calendar_id:
+            name = calendar.get("name")
+            return name if isinstance(name, str) else None
+    return None
+
+
+def _format_calendar_fetch_error(
+    calendar_id: str,
+    calendar_name: str | None,
+    exc: JXAError,
+) -> str:
+    label = f"calendar_id={calendar_id}"
+    if calendar_name:
+        label += f" calendar_name={calendar_name}"
+
+    message = f"Calendar event fetch failed ({label}): {exc}"
+    if exc.stderr:
+        message += f"; stderr: {exc.stderr}"
+    return message

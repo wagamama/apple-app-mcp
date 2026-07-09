@@ -213,6 +213,15 @@ def index(verbose: bool = False) -> None:
     count = manager.build_from_jxa()
     elapsed = _format_time(time.time() - start)
     print(f"Indexed {count:,} occurrences in {elapsed}")
+    failed_jobs = manager.get_stats().failed_jobs_count
+    if failed_jobs:
+        noun = "job" if failed_jobs == 1 else "jobs"
+        print(
+            f"Calendar index rebuild recorded {failed_jobs:,} failed "
+            f"{noun}. See failed_index_jobs for details.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 @app.command

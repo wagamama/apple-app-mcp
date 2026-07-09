@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock
+
+import pytest
 
 from apple_calendar_mcp import cli
 
@@ -23,6 +26,49 @@ def test_status_no_index_exits(monkeypatch, capsys):
 
     captured = capsys.readouterr()
     assert "No index found" in captured.out
+
+
+@pytest.mark.parametrize(
+    ("failed_jobs", "expected"),
+    [
+        (1, "1 failed job"),
+        (2, "2 failed jobs"),
+    ],
+)
+def test_index_exits_nonzero_when_failed_jobs_exist(
+    monkeypatch, capsys, failed_jobs, expected
+):
+    manager = MagicMock()
+    manager.build_from_jxa.return_value = 0
+    manager.get_stats.return_value = SimpleNamespace(
+        failed_jobs_count=failed_jobs
+    )
+    monkeypatch.setattr(cli, "IndexManager", lambda: manager)
+
+    with pytest.raises(SystemExit) as excinfo:
+        cli.index()
+
+    assert excinfo.value.code == 1
+    captured = capsys.readouterr()
+    assert "Indexed 0 occurrences" in captured.out
+    assert expected in captured.err
+    assert "failed_index_jobs" in captured.err
+
+
+def test_index_succeeds_when_zero_occurrences_and_no_failed_jobs(
+    monkeypatch, capsys
+):
+    manager = MagicMock()
+    manager.build_from_jxa.return_value = 0
+    manager.get_stats.return_value = SimpleNamespace(failed_jobs_count=0)
+    monkeypatch.setattr(cli, "IndexManager", lambda: manager)
+
+    cli.index()
+
+    manager.get_stats.assert_called_once()
+    captured = capsys.readouterr()
+    assert "Indexed 0 occurrences" in captured.out
+    assert captured.err == ""
 
 
 def test_watch_loop_syncs_until_stopped(capsys):

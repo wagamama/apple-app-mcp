@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
@@ -172,9 +173,10 @@ def test_fetch_snapshot_prefers_local_store_when_available(tmp_path):
     execute.assert_not_called()
 
 
-def test_fetch_snapshot_falls_back_to_jxa_when_local_store_fails(tmp_path):
+def test_fetch_snapshot_logs_local_store_fallback_reason(tmp_path, caplog):
     db_path = tmp_path / "calendar.db"
     manager = IndexManager(db_path=db_path)
+    caplog.set_level(logging.WARNING)
 
     with (
         patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
@@ -187,6 +189,7 @@ def test_fetch_snapshot_falls_back_to_jxa_when_local_store_fails(tmp_path):
         patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
     ):
         store.exists.return_value = True
+        store.__str__.return_value = "/Calendar.sqlitedb"
         past.return_value = 1
         fut.return_value = 1
         cals.return_value = ["Calendar"]
@@ -204,6 +207,8 @@ def test_fetch_snapshot_falls_back_to_jxa_when_local_store_fails(tmp_path):
 
     assert fetch.call_count == 1
     assert execute.call_count == 2
+    assert "Falling back to Calendar JXA" in caplog.text
+    assert "OSError: store unavailable" in caplog.text
 
 
 def test_fetch_snapshot_defaults_to_bounded_past_window(tmp_path):
@@ -260,7 +265,7 @@ def test_fetch_snapshot_uses_index_calendars_as_event_scope(tmp_path):
     assert '["Work"]' in script
 
 
-def test_fetch_snapshot_skips_calendar_when_event_fetch_times_out(tmp_path):
+def test_fetch_snapshot_records_jxa_error_detail(tmp_path):
     db_path = tmp_path / "calendar.db"
     manager = IndexManager(db_path=db_path)
 
@@ -280,17 +285,51 @@ def test_fetch_snapshot_skips_calendar_when_event_fetch_times_out(tmp_path):
             JXAError("JXA script timed out after 15s"),
         ]
 
-        assert manager.fetch_snapshot() == {
-            "calendars": [{"id": "slow", "name": "Slow"}],
-            "events": [],
-            "failed_jobs": [
-                {
-                    "job_key": "calendar:slow",
-                    "calendar_id": "slow",
-                    "error_type": "calendar_event_fetch_failed",
-                    "error_message": (
-                        "Calendar event fetch timed out or failed"
-                    ),
-                }
-            ],
-        }
+        snapshot = manager.fetch_snapshot()
+
+    assert snapshot["calendars"] == [{"id": "slow", "name": "Slow"}]
+    assert snapshot["events"] == []
+    assert snapshot["failed_jobs"][0]["job_key"] == "calendar:slow"
+    assert snapshot["failed_jobs"][0]["calendar_id"] == "slow"
+    assert (
+        snapshot["failed_jobs"][0]["error_type"]
+        == "calendar_event_fetch_failed"
+    )
+    assert "slow" in snapshot["failed_jobs"][0]["error_message"]
+    assert "Slow" in snapshot["failed_jobs"][0]["error_message"]
+    assert (
+        "JXA script timed out after 15s"
+        in snapshot["failed_jobs"][0]["error_message"]
+    )
+
+
+def test_fetch_snapshot_records_jxa_stderr_when_available(tmp_path):
+    db_path = tmp_path / "calendar.db"
+    manager = IndexManager(db_path=db_path)
+
+    with (
+        patch("apple_calendar_mcp.index.manager.get_index_past_years") as past,
+        patch("apple_calendar_mcp.index.manager.get_index_future_years") as fut,
+        patch("apple_calendar_mcp.index.manager.get_index_calendars") as cals,
+        patch("apple_calendar_mcp.index.manager.DEFAULT_STORE_PATH") as store,
+        patch("apple_calendar_mcp.index.manager.execute_with_core") as execute,
+    ):
+        past.return_value = 1
+        fut.return_value = 1
+        cals.return_value = None
+        store.exists.return_value = False
+        execute.side_effect = [
+            [{"id": "slow", "name": "Slow"}],
+            JXAError(
+                "JXA script failed",
+                stderr="execution error: Calendar got an error",
+            ),
+        ]
+
+        snapshot = manager.fetch_snapshot()
+
+    assert "JXA script failed" in snapshot["failed_jobs"][0]["error_message"]
+    assert (
+        "execution error: Calendar got an error"
+        in snapshot["failed_jobs"][0]["error_message"]
+    )
