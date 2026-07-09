@@ -84,6 +84,11 @@ git tag v0.X.Y
 git push origin main v0.X.Y
 ```
 
+For a publish or release-version task, pushing `main` alone is incomplete.
+Always create the matching `v0.X.Y` tag and push that tag to `origin`; the tag
+push is what triggers `release.yml`. Before reporting the release handoff as
+complete, verify `git tag --list 'v0.X.Y'` returns the expected tag.
+
 PyPI is configured to trust `release.yml` in the `pypi` GitHub environment via
 OIDC trusted publishing. If publishing breaks, check the PyPI trusted publisher
 settings and the GitHub `pypi` environment.
