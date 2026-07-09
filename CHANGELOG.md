@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.11] - 2026-07-09
+
+### Fixed
+
+- **Calendar index rebuild failures are now visible and diagnosable** —
+  `mac-calendar-mcp index` and `rebuild` now exit non-zero when the rebuilt
+  index records failed calendar fetch jobs, preserving the original JXA error
+  message, stderr, calendar ID, and calendar name in `failed_index_jobs`.
+  Local Calendar store read failures now emit a warning before the JXA fallback
+  path, making transient store access issues distinguishable from JXA timeouts.
+
+### Changed
+
+- Bumped both PyPI packages and MCP registry manifests to `0.5.11`.
+
 ## [0.5.10] - 2026-06-04
 
 ### Fixed
