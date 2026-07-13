@@ -34,6 +34,17 @@ def test_calendar_core_uses_safe_calendar_id_helper():
     assert ".calendarIdentifier()" not in CALENDAR_CORE_JS
 
 
+def test_calendar_core_resolves_calendar_by_absolute_path():
+    assert "function getCalendarApplication()" in CALENDAR_CORE_JS
+    assert '"/System/Applications/Calendar.app"' in CALENDAR_CORE_JS
+    assert '"/Applications/Calendar.app"' in CALENDAR_CORE_JS
+    assert '"Calendar"' in CALENDAR_CORE_JS
+    assert "app.name();" in CALENDAR_CORE_JS
+    assert "app.calendars();" not in CALENDAR_CORE_JS
+    assert "const Calendar = getCalendarApplication();" in CALENDAR_CORE_JS
+    assert 'const Calendar = Application("Calendar");' not in CALENDAR_CORE_JS
+
+
 def test_calendar_core_uses_supported_calendar_date_filter_operator():
     assert "if (!start || !end || start >= end) return [];" in CALENDAR_CORE_JS
     assert "endDate: { _greaterThan: start }" in CALENDAR_CORE_JS

@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+import logging
+from unittest.mock import patch
+
+import pytest
+
+from apple_calendar_mcp.index import schema
 from apple_calendar_mcp.index.schema import (
     INSERT_ATTENDEE_SQL,
     INSERT_CALENDAR_SQL,
@@ -7,6 +13,30 @@ from apple_calendar_mcp.index.schema import (
     INSERT_OCCURRENCE_SQL,
     INSERT_SEARCH_SQL,
 )
+
+
+@pytest.mark.parametrize(
+    "chmod_error",
+    [
+        FileNotFoundError("missing after open"),
+        PermissionError("permission denied"),
+        OSError("chmod unsupported"),
+    ],
+)
+def test_create_connection_tolerates_chmod_errors(
+    tmp_path, caplog, chmod_error
+):
+    db_path = tmp_path / "index.db"
+    caplog.set_level(logging.DEBUG, logger=schema.__name__)
+
+    with patch.object(schema.os, "chmod", side_effect=chmod_error):
+        conn = schema.create_connection(db_path)
+
+    try:
+        assert conn.execute("SELECT 1").fetchone()[0] == 1
+    finally:
+        conn.close()
+    assert "Could not set 0600" in caplog.text
 
 
 def test_schema_creates_expected_tables(calendar_db):

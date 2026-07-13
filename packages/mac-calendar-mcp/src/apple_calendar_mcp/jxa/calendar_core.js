@@ -1,4 +1,23 @@
-const Calendar = Application("Calendar");
+function getCalendarApplication() {
+  const candidates = [
+    "/System/Applications/Calendar.app",
+    "/Applications/Calendar.app",
+    "Calendar"
+  ];
+  let lastError = null;
+  for (const candidate of candidates) {
+    try {
+      const app = Application(candidate);
+      app.name();
+      return app;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError || new Error("Calendar application not found");
+}
+
+const Calendar = getCalendarApplication();
 Calendar.includeStandardAdditions = true;
 
 const CalendarCore = {

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import logging
 import os
 import sqlite3
 from pathlib import Path
 
 SCHEMA_VERSION = 1
+logger = logging.getLogger(__name__)
 
 DEFAULT_PRAGMAS = {
     "journal_mode": "WAL",
@@ -45,8 +47,10 @@ def create_connection(db_path: Path) -> sqlite3.Connection:
         conn.execute(f"PRAGMA {pragma}={value}")
     try:
         os.chmod(db_path, 0o600)
-    except FileNotFoundError:
-        pass
+    except (FileNotFoundError, PermissionError) as exc:
+        logger.debug("Could not set 0600 on %s: %s", db_path, exc)
+    except OSError as exc:
+        logger.warning("Could not set 0600 on %s: %s", db_path, exc)
     return conn
 
 

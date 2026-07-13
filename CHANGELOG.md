@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Calendar index reads tolerate permission-hardening failures** —
+  `mac-calendar-mcp agenda`, `events`, `search`, and status reads now keep
+  working when SQLite opens the index successfully but the surrounding
+  execution context rejects the best-effort `chmod(0600)` permission update.
+  The Calendar JXA core also tries absolute Calendar.app paths before the
+  legacy app-name lookup for contexts where app-name resolution is unreliable.
+
 ## [0.5.11] - 2026-07-09
 
 ### Fixed
