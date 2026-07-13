@@ -1,6 +1,6 @@
 [project]
 name = "mac-calendar-mcp"
-version = "0.5.11"
+version = "0.5.12"
 description = "Read-only Mac Calendar MCP server with indexed archive search."
 readme = "README.md"
 license = "GPL-3.0-or-later"

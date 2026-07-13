@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.12] - 2026-07-13
+
 ### Fixed
 
 - **Calendar index reads tolerate permission-hardening failures** —
@@ -15,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   execution context rejects the best-effort `chmod(0600)` permission update.
   The Calendar JXA core also tries absolute Calendar.app paths before the
   legacy app-name lookup for contexts where app-name resolution is unreliable.
+
+### Changed
+
+- Bumped both PyPI packages and MCP registry manifests to `0.5.12`.
 
 ## [0.5.11] - 2026-07-09
 
