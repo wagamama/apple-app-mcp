@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.13] - 2026-07-15
+
+### Fixed
+
+- **Calendar rebuilds use EventKit and preserve the last healthy index** —
+  when Calendar's private SQLite store is unavailable, rebuilds now fetch a
+  bounded occurrence snapshot through Apple's supported EventKit API before
+  trying legacy Calendar.app scripting. Failed, partial, and unconfirmed empty
+  snapshots are rejected before publication, and mid-replacement exceptions
+  roll back instead of exposing an empty index. `rebuild --verbose` reports the
+  source and raw snapshot counts. `APPLE_CALENDAR_INDEX_SOURCE` can force the
+  `store`, `eventkit`, or legacy `jxa` path for diagnosis and verification.
+
+### Changed
+
+- Bumped both PyPI packages and MCP registry manifests to `0.5.13`.
+
 ## [0.5.12] - 2026-07-13
 
 ### Fixed
