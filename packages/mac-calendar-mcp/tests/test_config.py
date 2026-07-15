@@ -17,6 +17,7 @@ from apple_calendar_mcp.config import (
     get_index_max_occurrences_per_series,
     get_index_past_years,
     get_index_path,
+    get_index_source,
     get_index_staleness_hours,
 )
 
@@ -44,6 +45,7 @@ def _write(path: Path, body: str) -> None:
 
 def test_defaults(config_file):
     assert get_index_path() == config.DEFAULT_INDEX_PATH
+    assert get_index_source() == "auto"
     assert get_index_staleness_hours() == 24.0
     assert get_index_past_years() == 1
     assert get_index_future_years() == 1
@@ -61,6 +63,7 @@ config_version = {CONFIG_SCHEMA_VERSION}
 calendars = ["Work", "Personal"]
 [index]
 path = "~/calendar.db"
+source = "eventkit"
 staleness_hours = 12
 past_years = 5
 future_years = 2
@@ -72,6 +75,7 @@ calendars = ["Calendar"]
     assert get_default_calendars() == ["Work", "Personal"]
     assert get_index_calendars() == ["Calendar"]
     assert get_index_path() == Path("~/calendar.db").expanduser()
+    assert get_index_source() == "eventkit"
     assert get_index_staleness_hours() == 12.0
     assert get_index_past_years() == 5
     assert get_index_future_years() == 2
@@ -90,6 +94,36 @@ future_years = 2
     monkeypatch.setenv("APPLE_CALENDAR_INDEX_FUTURE_YEARS", "3")
 
     assert get_index_future_years() == 3
+
+
+def test_index_source_env_overrides_file(config_file, monkeypatch):
+    _write(
+        config_file,
+        f"""
+config_version = {CONFIG_SCHEMA_VERSION}
+[index]
+source = "store"
+""",
+    )
+    monkeypatch.setenv("APPLE_CALENDAR_INDEX_SOURCE", "eventkit")
+
+    assert get_index_source() == "eventkit"
+
+
+@pytest.mark.parametrize("source", ["auto", "store", "eventkit", "jxa"])
+def test_index_source_accepts_supported_values(
+    config_file, monkeypatch, source
+):
+    monkeypatch.setenv("APPLE_CALENDAR_INDEX_SOURCE", source)
+
+    assert get_index_source() == source
+
+
+def test_index_source_rejects_unknown_value(config_file, monkeypatch):
+    monkeypatch.setenv("APPLE_CALENDAR_INDEX_SOURCE", "unknown")
+
+    with pytest.raises(ConfigError, match="APPLE_CALENDAR_INDEX_SOURCE"):
+        get_index_source()
 
 
 def test_csv_env_default_calendars(monkeypatch, config_file):

@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from sqlite3 import Connection
 from sqlite3 import Error as SQLiteError
+from threading import RLock
 from typing import Any
 
 from apple_calendar_mcp.config import (
@@ -15,17 +16,23 @@ from apple_calendar_mcp.config import (
     get_index_max_occurrences_per_series,
     get_index_past_years,
     get_index_path,
+    get_index_source,
     get_index_staleness_hours,
 )
 from apple_calendar_mcp.executor import JXAError, execute_with_core
 
+from .eventkit import fetch_snapshot_from_eventkit
 from .schema import SCHEMA_VERSION, create_connection, get_schema_sql
 from .search import search_events
 from .store import DEFAULT_STORE_PATH, fetch_snapshot_from_store
-from .sync import sync_from_snapshot
+from .sync import record_failed_jobs, sync_from_snapshot
 
 CALENDAR_EVENT_FETCH_TIMEOUT_SECONDS = 15
 logger = logging.getLogger(__name__)
+
+
+class CalendarIndexRefreshError(RuntimeError):
+    """Raised when a failed source snapshot cannot safely replace the index."""
 
 
 @dataclass(frozen=True)
@@ -47,6 +54,10 @@ class IndexManager:
     def __init__(self, db_path: Path | None = None):
         self.db_path = db_path or get_index_path()
         self._conn: Connection | None = None
+        self._lock = RLock()
+        self.last_build_source: str | None = None
+        self.last_build_calendar_count = 0
+        self.last_build_event_count = 0
 
     @classmethod
     def get_instance(cls) -> IndexManager:
@@ -55,15 +66,17 @@ class IndexManager:
         return cls._instance
 
     def _connection(self) -> Connection:
-        if self._conn is None:
-            self._conn = create_connection(self.db_path)
-            self._conn.executescript(get_schema_sql())
-            self._conn.execute(
-                "INSERT OR REPLACE INTO schema_version (version) VALUES (?)",
-                (SCHEMA_VERSION,),
-            )
-            self._conn.commit()
-        return self._conn
+        with self._lock:
+            if self._conn is None:
+                self._conn = create_connection(self.db_path)
+                self._conn.executescript(get_schema_sql())
+                self._conn.execute(
+                    "INSERT OR REPLACE INTO schema_version (version) "
+                    "VALUES (?)",
+                    (SCHEMA_VERSION,),
+                )
+                self._conn.commit()
+            return self._conn
 
     def has_index(self) -> bool:
         return self.db_path.exists()
@@ -83,20 +96,71 @@ class IndexManager:
             .replace("+00:00", "Z")
         )
         configured_calendars = get_index_calendars()
-        if DEFAULT_STORE_PATH.exists():
+        source = get_index_source()
+        if source in {"auto", "store"} and DEFAULT_STORE_PATH.exists():
             try:
-                return fetch_snapshot_from_store(
+                store_snapshot = fetch_snapshot_from_store(
                     DEFAULT_STORE_PATH,
                     start=start,
                     end=end,
                     calendar_names_or_ids=configured_calendars,
                 )
+                if store_snapshot.get("events"):
+                    store_snapshot["source"] = "calendar-store"
+                    return store_snapshot
+                if source == "store":
+                    return _failed_source_snapshot(
+                        source="calendar-store",
+                        error_type="empty_calendar_snapshot",
+                        message=(
+                            "Local Calendar store returned no events and "
+                            "the empty snapshot was not independently confirmed"
+                        ),
+                    )
+                logger.warning(
+                    "Local Calendar store returned no events; confirming "
+                    "the empty snapshot with EventKit"
+                )
             except (OSError, SQLiteError) as exc:
                 logger.warning(
-                    "Falling back to Calendar JXA after local store read "
+                    "Falling back to EventKit after local store read "
                     "failed for %s: %s: %s",
                     DEFAULT_STORE_PATH,
                     type(exc).__name__,
+                    exc,
+                )
+                if source == "store":
+                    return _failed_source_snapshot(
+                        source="calendar-store",
+                        error_type="store_fetch_failed",
+                        message=(
+                            "Local Calendar store snapshot failed: "
+                            f"{type(exc).__name__}: {exc}"
+                        ),
+                    )
+        elif source == "store":
+            return _failed_source_snapshot(
+                source="calendar-store",
+                error_type="store_fetch_failed",
+                message=f"Local Calendar store not found: {DEFAULT_STORE_PATH}",
+            )
+
+        if source in {"auto", "eventkit"}:
+            try:
+                return fetch_snapshot_from_eventkit(
+                    start=start,
+                    end=end,
+                    calendar_names_or_ids=configured_calendars,
+                )
+            except JXAError as exc:
+                if source == "eventkit":
+                    return _failed_source_snapshot(
+                        source="eventkit",
+                        error_type="eventkit_fetch_failed",
+                        message=f"EventKit snapshot failed: {exc}",
+                    )
+                logger.warning(
+                    "Falling back to Calendar JXA after EventKit failed: %s",
                     exc,
                 )
 
@@ -113,9 +177,16 @@ const end = new Date(
   now.getFullYear() + {future_years}, now.getMonth(), now.getDate()
 ).toISOString();
 """
-        calendars = execute_with_core(
-            "JSON.stringify(CalendarCore.listCalendars());"
-        )
+        try:
+            calendars = execute_with_core(
+                "JSON.stringify(CalendarCore.listCalendars());"
+            )
+        except JXAError as exc:
+            return _failed_source_snapshot(
+                source="calendar-jxa",
+                error_type="calendar_discovery_failed",
+                message=f"Calendar discovery failed: {exc}",
+            )
         if configured_calendars is not None:
             selected_ids = set(configured_calendars)
         else:
@@ -158,6 +229,7 @@ const end = new Date(
                 continue
 
         return {
+            "source": "calendar-jxa",
             "calendars": calendars,
             "events": events,
             "failed_jobs": failed_jobs,
@@ -165,6 +237,37 @@ const end = new Date(
 
     def build_from_jxa(self, progress_callback=None) -> int:
         snapshot = self.fetch_snapshot()
+        self.last_build_source = snapshot.get("source", "unknown")
+        self.last_build_calendar_count = len(snapshot.get("calendars", []))
+        self.last_build_event_count = len(snapshot.get("events", []))
+        failed_jobs = list(snapshot.get("failed_jobs", []))
+        if (
+            self.last_build_source == "calendar-jxa"
+            and not self.last_build_event_count
+            and not failed_jobs
+        ):
+            failed_jobs.append(
+                {
+                    "job_key": "source:calendar-jxa:empty",
+                    "calendar_id": None,
+                    "error_type": "empty_calendar_snapshot",
+                    "error_message": (
+                        "Legacy Calendar JXA returned an unconfirmed "
+                        "empty snapshot"
+                    ),
+                }
+            )
+        if failed_jobs:
+            with self._lock:
+                record_failed_jobs(self._connection(), failed_jobs)
+            details = "; ".join(
+                job.get("error_message", "unknown source failure")
+                for job in failed_jobs
+            )
+            raise CalendarIndexRefreshError(
+                "Calendar index refresh failed; active index preserved: "
+                f"{details}"
+            )
         now = datetime.now(UTC)
         past_years = get_index_past_years()
         if past_years is None:
@@ -180,13 +283,16 @@ const end = new Date(
             .isoformat()
             .replace("+00:00", "Z")
         )
-        result = sync_from_snapshot(
-            self._connection(),
-            snapshot,
-            coverage_start=coverage_start,
-            coverage_end=coverage_end,
-            max_occurrences_per_series=(get_index_max_occurrences_per_series()),
-        )
+        with self._lock:
+            result = sync_from_snapshot(
+                self._connection(),
+                snapshot,
+                coverage_start=coverage_start,
+                coverage_end=coverage_end,
+                max_occurrences_per_series=(
+                    get_index_max_occurrences_per_series()
+                ),
+            )
         if progress_callback is not None:
             progress_callback(result.added, result.errors)
         return result.added
@@ -195,7 +301,8 @@ const end = new Date(
         return self.build_from_jxa()
 
     def search(self, query: str, **kwargs) -> list[dict]:
-        return search_events(self._connection(), query, **kwargs)
+        with self._lock:
+            return search_events(self._connection(), query, **kwargs)
 
     def events(
         self,
@@ -232,7 +339,9 @@ const end = new Date(
             params.extend(calendar_ids)
         sql += " ORDER BY o.occurrence_start LIMIT ? OFFSET ?"
         params.extend([limit, offset])
-        return [dict(row) for row in self._connection().execute(sql, params)]
+        with self._lock:
+            rows = self._connection().execute(sql, params).fetchall()
+        return [dict(row) for row in rows]
 
     def get_event(
         self,
@@ -256,23 +365,24 @@ const end = new Date(
             sql += " AND o.occurrence_start = ?"
             params.append(occurrence_start)
         sql += " ORDER BY o.occurrence_start LIMIT 1"
-        row = self._connection().execute(sql, params).fetchone()
-        if row is None:
-            raise ValueError(f"Calendar event {event_id} not found.")
-        result = dict(row)
-        attendee_rows = (
-            self._connection()
-            .execute(
-                """
-            SELECT display_name, email, participation_status
-            FROM attendees
-            WHERE event_id = ?
-            ORDER BY display_name, email
-            """,
-                (event_id,),
+        with self._lock:
+            row = self._connection().execute(sql, params).fetchone()
+            if row is None:
+                raise ValueError(f"Calendar event {event_id} not found.")
+            result = dict(row)
+            attendee_rows = (
+                self._connection()
+                .execute(
+                    """
+                SELECT display_name, email, participation_status
+                FROM attendees
+                WHERE event_id = ?
+                ORDER BY display_name, email
+                """,
+                    (event_id,),
+                )
+                .fetchall()
             )
-            .fetchall()
-        )
         result["attendees"] = [dict(attendee) for attendee in attendee_rows]
         return result
 
@@ -309,6 +419,10 @@ const end = new Date(
         return age.total_seconds() / 3600 > get_index_staleness_hours()
 
     def get_stats(self) -> IndexStats:
+        with self._lock:
+            return self._get_stats_unlocked()
+
+    def _get_stats_unlocked(self) -> IndexStats:
         conn = self._connection()
         coverage = conn.execute(
             """
@@ -361,6 +475,27 @@ def _parse_sqlite_timestamp(value: str | None) -> datetime | None:
     if not value:
         return None
     return datetime.fromisoformat(value).replace(tzinfo=UTC)
+
+
+def _failed_source_snapshot(
+    *,
+    source: str,
+    error_type: str,
+    message: str,
+) -> dict[str, Any]:
+    return {
+        "source": source,
+        "calendars": [],
+        "events": [],
+        "failed_jobs": [
+            {
+                "job_key": f"source:{source}",
+                "calendar_id": None,
+                "error_type": error_type,
+                "error_message": message,
+            }
+        ],
+    }
 
 
 def _calendar_name_for_id(

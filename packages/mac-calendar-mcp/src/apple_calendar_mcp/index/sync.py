@@ -14,14 +14,35 @@ from .schema import (
 )
 
 INSERT_FAILED_JOB_SQL = """
-INSERT OR REPLACE INTO failed_index_jobs
+INSERT INTO failed_index_jobs
     (job_key, calendar_id, event_id, error_type, error_message, last_seen,
      attempt_count)
 VALUES
-    (?, ?, ?, ?, ?, datetime('now'),
-     COALESCE((SELECT attempt_count + 1 FROM failed_index_jobs
-               WHERE job_key = ?), 1))
+    (?, ?, ?, ?, ?, datetime('now'), 1)
+ON CONFLICT(job_key) DO UPDATE SET
+    calendar_id = excluded.calendar_id,
+    event_id = excluded.event_id,
+    error_type = excluded.error_type,
+    error_message = excluded.error_message,
+    last_seen = datetime('now'),
+    attempt_count = failed_index_jobs.attempt_count + 1
 """
+
+
+def record_failed_jobs(conn: Connection, jobs: list[dict]) -> None:
+    """Record failed source jobs without replacing the active index."""
+    for job in jobs:
+        conn.execute(
+            INSERT_FAILED_JOB_SQL,
+            (
+                job["job_key"],
+                job.get("calendar_id"),
+                job.get("event_id"),
+                job["error_type"],
+                job["error_message"],
+            ),
+        )
+    conn.commit()
 
 
 @dataclass(frozen=True)
@@ -41,6 +62,30 @@ def _attendees_text(attendees: list[dict]) -> str:
 
 
 def sync_from_snapshot(
+    conn: Connection,
+    snapshot: dict,
+    *,
+    coverage_start: str,
+    coverage_end: str,
+    max_occurrences_per_series: int,
+) -> SyncResult:
+    """Atomically replace the active index with a validated snapshot."""
+    if snapshot.get("failed_jobs"):
+        raise ValueError("Cannot publish a snapshot with failed source jobs")
+    try:
+        return _sync_from_snapshot(
+            conn,
+            snapshot,
+            coverage_start=coverage_start,
+            coverage_end=coverage_end,
+            max_occurrences_per_series=max_occurrences_per_series,
+        )
+    except Exception:
+        conn.rollback()
+        raise
+
+
+def _sync_from_snapshot(
     conn: Connection,
     snapshot: dict,
     *,
@@ -134,18 +179,5 @@ def sync_from_snapshot(
             added += 1
         if expansion.unsupported:
             errors += 1
-    for job in snapshot.get("failed_jobs", []):
-        conn.execute(
-            INSERT_FAILED_JOB_SQL,
-            (
-                job["job_key"],
-                job.get("calendar_id"),
-                job.get("event_id"),
-                job["error_type"],
-                job["error_message"],
-                job["job_key"],
-            ),
-        )
-        errors += 1
     conn.commit()
     return SyncResult(added=added, errors=errors)

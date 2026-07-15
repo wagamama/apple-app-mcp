@@ -6,8 +6,8 @@ MCP server.
 
 ## Project Overview
 
-Mac Calendar MCP is a read-only, JXA-only MCP server focused on
-archive search across Apple Calendar events. It provides a small
+Mac Calendar MCP is a read-only MCP server focused on archive search across
+Apple Calendar events. It provides a small
 assistant-friendly read surface, backed by a local SQLite + FTS5 index for
 search across all accessible calendar history. The implementation should stay
 separate from Mac Mail MCP as its own package and CLI while following the same
@@ -30,11 +30,13 @@ packages/mac-calendar-mcp/src/apple_calendar_mcp/
 │   ├── __init__.py     # Exports IndexManager
 │   ├── schema.py       # SQLite schema for events and occurrences
 │   ├── manager.py      # IndexManager class
-│   ├── sync.py         # JXA-backed index rebuild and refresh
+│   ├── eventkit.py     # Supported EventKit snapshot adapter
+│   ├── sync.py         # Atomic index replacement and refresh
 │   └── search.py       # FTS5 search functions
 └── jxa/
     ├── __init__.py     # Exports CALENDAR_CORE_JS
-    └── calendar_core.js # Shared JXA utilities (CalendarCore object)
+    ├── calendar_core.js # Legacy Calendar.app scripting utilities
+    └── eventkit_core.js # JXA-Objective-C EventKit snapshot utilities
 ```
 
 ## MCP Tools (6 total)
@@ -83,17 +85,24 @@ and calendar name by default. Notes are indexed and returned by default.
 
 ## Architecture
 
-### JXA-Only Calendar Access
+### Hybrid Calendar Access
 
-**Decision:** v1 uses Calendar.app JXA only, not EventKit/PyObjC.
+Calendar rebuilds use three read-only sources in order:
 
-**Reasoning:** This keeps Calendar MCP close to the existing Mail MCP runtime
-model: `osascript -l JavaScript`, shared injected JS helpers, safe
-`json.dumps()` serialization, and Python-side indexing/search.
+1. Calendar's local SQLite store when the process can read it.
+2. Apple's supported EventKit API through JXA-Objective-C.
+3. Calendar.app scripting as a legacy compatibility fallback.
+
+EventKit is the reliable fallback for scheduled and sandboxed contexts where
+the private store is protected. It returns expanded occurrences for the bounded
+index window and avoids the slow per-event Apple Events query. The private
+store remains a fast-path optimization, not a correctness requirement.
 
 **Caveat:** Calendar.app scripting exposes a recurrence string, not a complete
 occurrence-expansion API. The Python recurrence layer must expand common
-patterns and explicitly mark unsupported complex rules.
+patterns and explicitly mark unsupported complex rules when that legacy path is
+used. EventKit already returns expanded occurrences, so those records are
+indexed as individual non-recurring events.
 
 ### Layer Separation
 
@@ -101,9 +110,11 @@ patterns and explicitly mark unsupported complex rules.
 2. **server.py** - 6 read-only MCP tools, uses builders and index
 3. **builders.py** - Constructs JXA scripts from Python, type-safe
 4. **executor.py** - Runs scripts via osascript, handles JSON parsing
-5. **recurrence.py** - Expands common recurrence rules into occurrences
-6. **index/** - FTS5 search index for archive search
-7. **jxa/calendar_core.js** - Shared JS utilities injected into all scripts
+5. **index/eventkit.py** - Builds safe EventKit snapshot requests
+6. **recurrence.py** - Expands common recurrence rules into occurrences
+7. **index/** - FTS5 search index for archive search
+8. **jxa/calendar_core.js** - Legacy Calendar.app scripting utilities
+9. **jxa/eventkit_core.js** - Supported EventKit snapshot adapter
 
 ### Data Flow (JXA Path)
 
@@ -122,11 +133,17 @@ MCP Tool → CalendarQueryBuilder method → executor.execute_with_core()
 ```
 CLI/server startup → IndexManager.sync_updates()
                             ↓
-              JXA list calendars + raw events
+            Calendar store available and non-empty?
+                    ↙ yes             ↘ no/empty
+              SQLite snapshot      EventKit snapshot
+                                           ↓ failure
+                              legacy Calendar.app JXA
                             ↓
               recurrence.expand_occurrences()
                             ↓
-              UPSERT event records + occurrence rows
+            validate complete snapshot before publish
+                            ↓
+            atomic event and occurrence replacement
                             ↓
               FTS5 tables updated for archive search
 ```
@@ -137,7 +154,9 @@ CLI/server startup → IndexManager.sync_updates()
 |---------------|----------|---------|-----------|
 | **FTS5 (Cached)** | Archive text search | ~2-10ms target | `search_events()` |
 | **SQLite (Cached)** | Date-range occurrence reads | ~1-5ms target | `get_events()`, `get_agenda()` |
-| **JXA (Live)** | Calendar discovery and index refresh | ~100ms+ target | `list_calendars()`, `index`, `rebuild` |
+| **Calendar SQLite (Live)** | Fast snapshot when readable | sub-second target | `index`, `rebuild`, background sync |
+| **EventKit (Live)** | Supported snapshot fallback | sub-second target | `index`, `rebuild`, background sync |
+| **Calendar.app JXA** | Legacy compatibility fallback | potentially slow | Last resort after store and EventKit failure |
 | **Python Recurrence** | Recurring event expansion | depends on range | indexing and refresh |
 
 ### Recurrence Strategy
@@ -270,7 +289,8 @@ from apple_calendar_mcp.index import IndexManager
 
 manager = IndexManager.get_instance()
 
-# Build index from Calendar.app via JXA
+# Build from the configured store/EventKit/JXA source. The method name is
+# retained for API compatibility.
 manager.build_from_jxa(progress_callback=None)
 
 # Refresh cached calendars, events, and occurrences
@@ -412,6 +432,7 @@ Values should resolve in this precedence order (highest first):
 | Variable | TOML key | Default | Description |
 |----------|----------|---------|-------------|
 | `APPLE_CALENDAR_INDEX_PATH` | `[index] path` | `~/.mac-calendar-mcp/index.db` | Index database location |
+| `APPLE_CALENDAR_INDEX_SOURCE` | `[index] source` | `auto` | Snapshot source: `auto`, `store`, `eventkit`, or legacy `jxa` |
 | `APPLE_CALENDAR_INDEX_STALENESS_HOURS` | `[index] staleness_hours` | `24` | Hours before refresh |
 | `APPLE_CALENDAR_INDEX_PAST_YEARS` | `[index] past_years` | `1` | Archive backfill limit in years |
 | `APPLE_CALENDAR_INDEX_FUTURE_YEARS` | `[index] future_years` | `1` | Future expansion window for recurring events |
@@ -443,7 +464,8 @@ added to this repo.
 1. **macOS Only** - Requires Apple Calendar and `osascript`.
 2. **Calendar Permission** - macOS grants Calendar read access through the
    system privacy prompt; the OS permission is not a read-only-only grant.
-3. **JXA-Only Backend** - v1 does not use EventKit/PyObjC.
+3. **macOS-Only Backend** - v1 reads through the Calendar store, EventKit,
+   or legacy Calendar.app JXA; it does not use PyObjC.
 4. **Recurrence Coverage** - Common recurrence rules are expanded; complex
    unsupported recurrence strings must be reported clearly.
 5. **Future Recurrences** - Recurring events are expanded through the configured

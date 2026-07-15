@@ -18,6 +18,33 @@ Common issues and their solutions.
 !!! note
     The MCP server itself does **not** need Full Disk Access — only the `index` and `rebuild` commands do. Once the index is built, the server uses disk-based sync which works without FDA.
 
+## Calendar Rebuild Permission Or Timeout
+
+**Symptom:** `mac-calendar-mcp rebuild` reports that the active index was
+preserved, EventKit access is unavailable, or legacy Calendar JXA timed out.
+
+**Cause:** Calendar's private SQLite store is protected in the current process
+context and the terminal or MCP host does not have Full Calendar Access.
+Calendar.app scripting is intentionally only a final fallback because large
+calendar queries can be slow.
+
+**Fix:**
+
+1. Open **System Settings**.
+2. Go to **Privacy & Security → Calendars**.
+3. Give the terminal or MCP host **Full Access**, not add-events-only access.
+4. Restart that process and run:
+
+    ```bash
+    APPLE_CALENDAR_INDEX_SOURCE=eventkit mac-calendar-mcp rebuild --verbose
+    ```
+
+A healthy fallback rebuild reports `Source: eventkit`, non-zero event and
+occurrence counts, and zero failed jobs. Failed, partial, and unconfirmed empty
+snapshots are recorded for diagnosis without replacing the last healthy index.
+Remove `APPLE_CALENDAR_INDEX_SOURCE` after diagnosis to restore the default
+`auto` source order.
+
 ## Empty Search Results
 
 **Symptom:** `search()` returns no results for queries you know should match.

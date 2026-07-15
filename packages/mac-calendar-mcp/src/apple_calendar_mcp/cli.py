@@ -23,7 +23,7 @@ from typing import Annotated
 import cyclopts
 
 from .config import get_index_path
-from .index import IndexManager
+from .index import CalendarIndexRefreshError, IndexManager
 from .index.store import DEFAULT_STORE_PATH
 
 DEFAULT_WATCH_INTERVAL_SECONDS = 3600
@@ -210,9 +210,26 @@ def serve(
 def index(verbose: bool = False) -> None:
     manager = IndexManager()
     start = time.time()
-    count = manager.build_from_jxa()
+    try:
+        count = manager.build_from_jxa()
+    except CalendarIndexRefreshError as exc:
+        if verbose:
+            print(
+                f"Source: {manager.last_build_source}; "
+                f"calendars: {manager.last_build_calendar_count:,}; "
+                f"events: {manager.last_build_event_count:,}",
+                file=sys.stderr,
+            )
+        print(str(exc), file=sys.stderr)
+        sys.exit(1)
     elapsed = _format_time(time.time() - start)
     print(f"Indexed {count:,} occurrences in {elapsed}")
+    if verbose:
+        print(
+            f"Source: {manager.last_build_source}; "
+            f"calendars: {manager.last_build_calendar_count:,}; "
+            f"events: {manager.last_build_event_count:,}"
+        )
     failed_jobs = manager.get_stats().failed_jobs_count
     if failed_jobs:
         noun = "job" if failed_jobs == 1 else "jobs"

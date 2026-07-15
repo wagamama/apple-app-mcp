@@ -39,14 +39,19 @@ Add to your MCP client:
 ### Build the Search Index (Recommended)
 
 ```bash
-# Requires Calendar automation permission for Terminal or your MCP client
-# System Settings -> Privacy & Security -> Automation
+# Requires Full Calendar Access for Terminal or your MCP client
+# System Settings -> Privacy & Security -> Calendars
 
 mac-calendar-mcp index
 ```
 
 The index enables fast archive search and date-range reads from a local SQLite
 and FTS5 database.
+
+Rebuilds use Calendar's local database when it is readable, then fall back to
+Apple's supported EventKit API. Calendar.app scripting is retained only as a
+legacy final fallback. A failed or suspiciously empty refresh never replaces a
+previously healthy index.
 
 Run the MCP server with watch mode to keep the index current while events
 change in Calendar.app:
@@ -76,6 +81,7 @@ Common environment variables:
 | Variable | Purpose |
 |----------|---------|
 | `APPLE_CALENDAR_INDEX_PATH` | Override the SQLite index location. |
+| `APPLE_CALENDAR_INDEX_SOURCE` | Snapshot source: `auto` (default), `store`, `eventkit`, or `jxa`. |
 | `APPLE_CALENDAR_INDEX_STALENESS_HOURS` | Hours before an index is considered stale. |
 | `APPLE_CALENDAR_INDEX_CALENDARS` | Comma-separated calendar names or IDs to index; unset indexes all calendars. |
 | `APPLE_CALENDAR_INDEX_PAST_YEARS` | Historical indexing window; defaults to 1 year. |
@@ -143,6 +149,7 @@ mac-calendar-mcp search "quarterly planning" --limit 10
 mac-calendar-mcp events 2026-05-01 2026-06-01 --limit 50
 mac-calendar-mcp agenda --days 7
 mac-calendar-mcp rebuild
+mac-calendar-mcp rebuild --verbose  # source and snapshot counts
 ```
 
 All data commands output JSON where practical.

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from apple_calendar_mcp.index.sync import sync_from_snapshot
+import pytest
+
+from apple_calendar_mcp.index.sync import record_failed_jobs, sync_from_snapshot
 
 
 def test_sync_from_snapshot_inserts_event_occurrence_attendee(calendar_db):
@@ -60,7 +62,7 @@ def test_sync_from_snapshot_inserts_event_occurrence_attendee(calendar_db):
     )
 
 
-def test_sync_from_snapshot_records_failed_jobs(calendar_db):
+def test_sync_from_snapshot_rejects_failed_source_jobs(calendar_db):
     snapshot = {
         "calendars": [
             {
@@ -82,16 +84,40 @@ def test_sync_from_snapshot_records_failed_jobs(calendar_db):
         ],
     }
 
-    result = sync_from_snapshot(
-        calendar_db,
-        snapshot,
-        coverage_start="2026-01-01T00:00:00Z",
-        coverage_end="2027-01-01T00:00:00Z",
-        max_occurrences_per_series=100,
-    )
+    with pytest.raises(ValueError, match="failed source jobs"):
+        sync_from_snapshot(
+            calendar_db,
+            snapshot,
+            coverage_start="2026-01-01T00:00:00Z",
+            coverage_end="2027-01-01T00:00:00Z",
+            max_occurrences_per_series=100,
+        )
 
-    assert result.errors == 1
+    calendar_count = calendar_db.execute(
+        "SELECT COUNT(*) FROM calendars"
+    ).fetchone()[0]
+    assert calendar_count == 0
+
+
+def test_record_failed_jobs_preserves_first_seen_on_retry(calendar_db):
+    job = {
+        "job_key": "source:eventkit",
+        "calendar_id": None,
+        "error_type": "eventkit_fetch_failed",
+        "error_message": "access denied",
+    }
+    record_failed_jobs(calendar_db, [job])
+    calendar_db.execute(
+        "UPDATE failed_index_jobs SET first_seen = ? WHERE job_key = ?",
+        ("2026-01-01 00:00:00", job["job_key"]),
+    )
+    calendar_db.commit()
+
+    record_failed_jobs(calendar_db, [job])
+
     row = calendar_db.execute(
-        "SELECT calendar_id, error_type FROM failed_index_jobs"
+        "SELECT first_seen, attempt_count FROM failed_index_jobs "
+        "WHERE job_key = ?",
+        (job["job_key"],),
     ).fetchone()
-    assert tuple(row) == ("slow", "calendar_event_fetch_failed")
+    assert tuple(row) == ("2026-01-01 00:00:00", 2)

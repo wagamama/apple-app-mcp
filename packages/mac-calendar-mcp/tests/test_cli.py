@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from apple_calendar_mcp import cli
+from apple_calendar_mcp.index.manager import CalendarIndexRefreshError
 
 
 def test_format_size():
@@ -69,6 +70,56 @@ def test_index_succeeds_when_zero_occurrences_and_no_failed_jobs(
     captured = capsys.readouterr()
     assert "Indexed 0 occurrences" in captured.out
     assert captured.err == ""
+
+
+def test_index_reports_preserved_refresh_failure(monkeypatch, capsys):
+    manager = MagicMock()
+    manager.build_from_jxa.side_effect = CalendarIndexRefreshError(
+        "Calendar index refresh failed; active index preserved: timed out"
+    )
+    monkeypatch.setattr(cli, "IndexManager", lambda: manager)
+
+    with pytest.raises(SystemExit) as excinfo:
+        cli.index()
+
+    assert excinfo.value.code == 1
+    captured = capsys.readouterr()
+    assert "active index preserved" in captured.err
+    assert "Traceback" not in captured.err
+
+
+def test_index_verbose_reports_failed_snapshot_source(monkeypatch, capsys):
+    manager = MagicMock()
+    manager.build_from_jxa.side_effect = CalendarIndexRefreshError(
+        "Calendar index refresh failed; active index preserved: denied"
+    )
+    manager.last_build_source = "eventkit"
+    manager.last_build_calendar_count = 0
+    manager.last_build_event_count = 0
+    monkeypatch.setattr(cli, "IndexManager", lambda: manager)
+
+    with pytest.raises(SystemExit) as excinfo:
+        cli.index(verbose=True)
+
+    assert excinfo.value.code == 1
+    captured = capsys.readouterr()
+    assert "Source: eventkit; calendars: 0; events: 0" in captured.err
+    assert "active index preserved" in captured.err
+
+
+def test_index_verbose_reports_snapshot_source(monkeypatch, capsys):
+    manager = MagicMock()
+    manager.build_from_jxa.return_value = 42
+    manager.get_stats.return_value = SimpleNamespace(failed_jobs_count=0)
+    manager.last_build_source = "eventkit"
+    manager.last_build_calendar_count = 1
+    manager.last_build_event_count = 42
+    monkeypatch.setattr(cli, "IndexManager", lambda: manager)
+
+    cli.index(verbose=True)
+
+    captured = capsys.readouterr()
+    assert "Source: eventkit; calendars: 1; events: 42" in captured.out
 
 
 def test_watch_loop_syncs_until_stopped(capsys):

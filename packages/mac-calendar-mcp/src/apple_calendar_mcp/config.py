@@ -10,6 +10,7 @@ DEFAULT_INDEX_PATH = Path.home() / ".mac-calendar-mcp" / "index.db"
 CONFIG_FILE_PATH = Path.home() / ".mac-calendar-mcp" / "config.toml"
 CONFIG_SCHEMA_VERSION = 1
 DEFAULT_INDEX_PAST_YEARS = 1
+INDEX_SOURCES = frozenset({"auto", "store", "eventkit", "jxa"})
 
 CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {
     "defaults": {
@@ -17,6 +18,7 @@ CONFIG_SCHEMA: dict[str, dict[str, tuple[type, ...]]] = {
     },
     "index": {
         "path": (str,),
+        "source": (str,),
         "staleness_hours": (int, float),
         "calendars": (list,),
         "past_years": (int,),
@@ -142,6 +144,22 @@ def get_index_path() -> Path:
     return DEFAULT_INDEX_PATH
 
 
+def get_index_source() -> str:
+    """Return the configured Calendar snapshot source."""
+    env = os.environ.get("APPLE_CALENDAR_INDEX_SOURCE")
+    value = env if env not in (None, "") else _from_toml("index", "source")
+    source = value if value is not None else "auto"
+    if source not in INDEX_SOURCES:
+        origin = (
+            "APPLE_CALENDAR_INDEX_SOURCE"
+            if env not in (None, "")
+            else "[index] source"
+        )
+        choices = ", ".join(sorted(INDEX_SOURCES))
+        raise ConfigError(f"{origin} must be one of {choices}; got {source!r}.")
+    return source
+
+
 def get_index_staleness_hours() -> float:
     """Return hours before the Calendar index is considered stale."""
     raw = os.environ.get("APPLE_CALENDAR_INDEX_STALENESS_HOURS")
@@ -245,6 +263,11 @@ config_version = 1
 # Path to the SQLite search index database.
 # Env: APPLE_CALENDAR_INDEX_PATH
 # path = "~/.mac-calendar-mcp/index.db"
+
+# Snapshot source. "auto" tries the local store, EventKit, then legacy JXA.
+# Set "eventkit" to verify the supported API path directly.
+# Env: APPLE_CALENDAR_INDEX_SOURCE
+# source = "auto"
 
 # Hours before the index is considered stale and should be re-synced.
 # Env: APPLE_CALENDAR_INDEX_STALENESS_HOURS
