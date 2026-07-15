@@ -91,7 +91,7 @@ and calendar name by default. Notes are indexed and returned by default.
 Calendar rebuilds use three read-only sources in order:
 
 1. Calendar's local SQLite store when the process can read it.
-2. Apple's supported EventKit API through a compiled JXA helper.
+2. Apple's supported EventKit API through a signed JXA helper app.
 3. Calendar.app scripting as a legacy compatibility fallback.
 
 EventKit is the reliable fallback for scheduled and sandboxed contexts where
@@ -103,8 +103,20 @@ Run `mac-calendar-mcp authorize` once from an interactive session. It compiles
 and signs a small helper app under `$HOME/Applications`, requests Full Calendar
 Access, and verifies that access. The stable app identity prevents launchd from
 receiving a different EventKit authorization state than an interactive shell.
-Rebuild inputs are passed as `osascript` arguments to the compiled script and
-are never interpolated into executable JavaScript.
+Calendar rebuilds launch the signed app bundle itself through LaunchServices;
+they never execute its internal script with `osascript`. Inputs are passed as
+app arguments, and results use a private temporary directory. Missing, stale,
+modified, or unsigned helpers fail with an explicit authorization instruction
+instead of falling back to anonymous EventKit execution.
+
+### Authorization Boundaries
+
+| Access path | Authorization boundary | Failure behavior |
+|-------------|------------------------|------------------|
+| Calendar SQLite store | Host process filesystem/privacy access; there is no programmatic Calendar prompt for this private file | Fall through to EventKit, or fail if `store` is forced |
+| EventKit snapshot | Full Calendar Access granted to the signed helper app | Reject missing, stale, modified, unsigned, denied, or restricted helpers |
+| Calendar.app JXA | macOS Automation consent for the process sending Apple Events | Record the Apple Event error; this remains the legacy final fallback |
+| MCP SQLite index | Local file permissions (`0o600`) | Report a missing or unreadable index without live Calendar access |
 
 **Caveat:** Calendar.app scripting exposes a recurrence string, not a complete
 occurrence-expansion API. The Python recurrence layer must expand common
@@ -491,7 +503,9 @@ added to this repo.
 |--------|------------|----------|
 | **SQL Injection** | Parameterized queries with `?` placeholders | search.py, sync.py |
 | **JXA Injection** | `json.dumps()` serialization for all strings | builders.py, sync.py |
-| **Helper Argument Injection** | Snapshot values passed as subprocess arguments, never executable source | eventkit_helper.py |
+| **Helper Identity Bypass** | Launch the signed app bundle, never its internal script through `osascript` | eventkit_helper.py |
+| **Helper Tampering** | Verify the bundle signature, metadata, source hash, decompiled script, and applet executable against a locally built package reference before every EventKit launch | eventkit_helper.py |
+| **Helper Argument Injection** | Snapshot values passed as app arguments, never executable source | eventkit_helper.py |
 | **FTS5 Query Injection** | Special character escaping via parser helpers | search.py |
 | **Data Exposure** | Index database created with 0o600 permissions | schema.py |
 | **Runaway Recurrence** | Per-series occurrence cap and future window | recurrence.py |

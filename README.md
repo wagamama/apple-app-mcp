@@ -28,7 +28,9 @@ mac-calendar-mcp index
 
 Calendar authorization installs a small helper app with a stable macOS privacy
 identity. Approve its Full Calendar Access prompt once so terminal, MCP, and
-scheduled launchd rebuilds can use EventKit consistently.
+scheduled launchd rebuilds can use EventKit consistently. EventKit runs inside
+that signed app identity; the Calendar MCP does not execute the helper's script
+through an anonymous `osascript` process.
 
 Generate optional config files:
 

@@ -7,7 +7,7 @@ import json
 import subprocess
 from typing import Any
 
-from .jxa import CALENDAR_CORE_JS, EVENTKIT_CORE_JS
+from .jxa import CALENDAR_CORE_JS
 
 
 class JXAError(Exception):
@@ -45,19 +45,6 @@ def execute_with_core(script_body: str, timeout: int = 120) -> Any:
         preview = output[:500] + "..." if len(output) > 500 else output
         raise JXAError(
             f"Failed to parse JXA output as JSON: {e}\nOutput: {preview}",
-            stderr=output,
-        ) from e
-
-
-def execute_with_eventkit(script_body: str, timeout: int = 120) -> Any:
-    """Execute an EventKit JXA snippet and parse its JSON output."""
-    output = run_jxa(f"{EVENTKIT_CORE_JS}\n\n{script_body}", timeout)
-    try:
-        return json.loads(output)
-    except json.JSONDecodeError as e:
-        preview = output[:500] + "..." if len(output) > 500 else output
-        raise JXAError(
-            f"Failed to parse EventKit output as JSON: {e}\nOutput: {preview}",
             stderr=output,
         ) from e
 

@@ -54,6 +54,15 @@ If the helper app is damaged or its permission identity needs to be recreated,
 run `mac-calendar-mcp authorize --force` and approve Full Calendar Access
 again. The helper is installed under `$HOME/Applications`; it does not read or
 modify calendar data outside the MCP's existing read-only EventKit snapshot.
+The MCP rejects helpers whose code signature, metadata, source hash, compiled
+script, or applet executable does not match a locally built reference for the
+installed package.
+
+If authorization shows “EventKit helper requires start, end, and calendars
+JSON,” the installed app is the older version 1 helper. Upgrade the package or
+use the current checkout, then run `mac-calendar-mcp authorize` again. The
+command replaces the stale helper before launching the dedicated authorization
+operation, so the old argument warning should not appear.
 
 ## Empty Search Results
 

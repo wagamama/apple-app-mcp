@@ -69,7 +69,8 @@ or MCP client that runs `mac-mail-mcp index`.
 Calendar indexing uses a helper app with a stable macOS privacy identity. Run
 `mac-calendar-mcp authorize` interactively and approve Full Calendar Access
 before the first index build. The authorization also applies when launchd or
-another background process runs the Calendar MCP later.
+another background process runs the Calendar MCP later because EventKit runs
+inside that signed helper app identity.
 
 ## Watch Mode
 

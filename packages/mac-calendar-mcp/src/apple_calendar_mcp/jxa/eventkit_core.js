@@ -3,6 +3,8 @@ ObjC.import("Foundation");
 
 const EventKitCore = {
   entityTypeEvent: 0,
+  restrictedStatus: 1,
+  deniedStatus: 2,
   authorizedStatus: 3,
 
   unwrap(value) {

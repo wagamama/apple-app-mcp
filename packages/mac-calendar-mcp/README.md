@@ -56,8 +56,11 @@ previously healthy index.
 The authorization command installs a small signed helper app under
 `$HOME/Applications`. Its stable macOS privacy identity lets the EventKit
 fallback work consistently from terminals, MCP hosts, and scheduled launchd
-jobs. Calendar inputs are passed as process arguments rather than interpolated
-into executable scripts.
+jobs. Calendar inputs are passed as app arguments rather than interpolated into
+executable scripts. Each rebuild verifies the helper's code signature,
+metadata, source hash, compiled script source, and applet executable against a
+locally built package reference, then launches the signed app bundle
+itself—not its internal script through `osascript`.
 
 Run the MCP server with watch mode to keep the index current while events
 change in Calendar.app:
