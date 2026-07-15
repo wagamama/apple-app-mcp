@@ -5,7 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.14] - 2026-07-15
+
+### Fixed
+
+- **Scheduled Calendar rebuilds retain EventKit authorization** — added
+  `mac-calendar-mcp authorize`, which installs and signs a small helper app
+  with a stable macOS privacy identity. EventKit snapshots use that compiled
+  helper when available, so launchd rebuilds no longer inherit an anonymous
+  command-line authorization state that can be add-events-only or
+  undetermined. Snapshot values are passed as process arguments rather than
+  interpolated into executable JavaScript.
+
+### Changed
+
+- Bumped both PyPI packages and MCP registry manifests to `0.5.14`.
 
 ## [0.5.13] - 2026-07-15
 
