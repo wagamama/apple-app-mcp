@@ -22,8 +22,13 @@ Build local indexes for fast search:
 
 ```bash
 mac-mail-mcp index --verbose
+mac-calendar-mcp authorize
 mac-calendar-mcp index
 ```
+
+Calendar authorization installs a small helper app with a stable macOS privacy
+identity. Approve its Full Calendar Access prompt once so terminal, MCP, and
+scheduled launchd rebuilds can use EventKit consistently.
 
 Generate optional config files:
 

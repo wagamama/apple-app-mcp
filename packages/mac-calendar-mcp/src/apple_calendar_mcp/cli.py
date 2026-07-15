@@ -265,6 +265,31 @@ def rebuild(verbose: bool = False) -> None:
     index(verbose=verbose)
 
 
+@app.command
+def authorize(
+    force: Annotated[
+        bool,
+        cyclopts.Parameter(
+            name=["--force", "-f"],
+            help="Rebuild the Calendar permission helper before authorizing",
+        ),
+    ] = False,
+) -> None:
+    """Install the EventKit helper and request full Calendar access."""
+    from .eventkit_helper import EventKitHelperError, authorize_eventkit_helper
+
+    try:
+        result = authorize_eventkit_helper(force=force)
+    except EventKitHelperError as exc:
+        print(f"Calendar authorization failed: {exc}", file=sys.stderr)
+        sys.exit(1)
+    calendar_count = int(result.get("calendars", 0))
+    print(
+        "Calendar access authorized: "
+        f"{calendar_count:,} calendars available to scheduled processes."
+    )
+
+
 @app.command(name="init")
 def cli_init(
     force: Annotated[

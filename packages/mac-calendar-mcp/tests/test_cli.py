@@ -122,6 +122,21 @@ def test_index_verbose_reports_snapshot_source(monkeypatch, capsys):
     assert "Source: eventkit; calendars: 1; events: 42" in captured.out
 
 
+def test_authorize_calendar_helper(monkeypatch, capsys):
+    authorize_helper = MagicMock(return_value={"status": 3, "calendars": 12})
+    monkeypatch.setattr(
+        "apple_calendar_mcp.eventkit_helper.authorize_eventkit_helper",
+        authorize_helper,
+    )
+
+    cli.authorize()
+
+    authorize_helper.assert_called_once_with(force=False)
+    captured = capsys.readouterr()
+    assert "Calendar access authorized" in captured.out
+    assert "12 calendars" in captured.out
+
+
 def test_watch_loop_syncs_until_stopped(capsys):
     manager = MagicMock()
     manager.sync_updates.side_effect = [3, 0]

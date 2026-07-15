@@ -24,16 +24,21 @@ Common issues and their solutions.
 preserved, EventKit access is unavailable, or legacy Calendar JXA timed out.
 
 **Cause:** Calendar's private SQLite store is protected in the current process
-context and the terminal or MCP host does not have Full Calendar Access.
-Calendar.app scripting is intentionally only a final fallback because large
-calendar queries can be slow.
+context. Anonymous command-line processes can also receive different EventKit
+authorization when launchd starts them, even if the same command works in a
+terminal. Calendar.app scripting is intentionally only a final fallback
+because large calendar queries can be slow.
 
 **Fix:**
 
-1. Open **System Settings**.
-2. Go to **Privacy & Security → Calendars**.
-3. Give the terminal or MCP host **Full Access**, not add-events-only access.
-4. Restart that process and run:
+1. Run the one-time authorization command from an interactive session:
+
+    ```bash
+    mac-calendar-mcp authorize
+    ```
+
+2. Approve **Full Calendar Access** for the Mac Calendar MCP EventKit Helper.
+3. Verify the exact EventKit path:
 
     ```bash
     APPLE_CALENDAR_INDEX_SOURCE=eventkit mac-calendar-mcp rebuild --verbose
@@ -44,6 +49,11 @@ occurrence counts, and zero failed jobs. Failed, partial, and unconfirmed empty
 snapshots are recorded for diagnosis without replacing the last healthy index.
 Remove `APPLE_CALENDAR_INDEX_SOURCE` after diagnosis to restore the default
 `auto` source order.
+
+If the helper app is damaged or its permission identity needs to be recreated,
+run `mac-calendar-mcp authorize --force` and approve Full Calendar Access
+again. The helper is installed under `$HOME/Applications`; it does not read or
+modify calendar data outside the MCP's existing read-only EventKit snapshot.
 
 ## Empty Search Results
 

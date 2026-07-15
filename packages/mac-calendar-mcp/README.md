@@ -39,8 +39,8 @@ Add to your MCP client:
 ### Build the Search Index (Recommended)
 
 ```bash
-# Requires Full Calendar Access for Terminal or your MCP client
-# System Settings -> Privacy & Security -> Calendars
+# One-time setup: approve Full Calendar Access for the helper app
+mac-calendar-mcp authorize
 
 mac-calendar-mcp index
 ```
@@ -52,6 +52,12 @@ Rebuilds use Calendar's local database when it is readable, then fall back to
 Apple's supported EventKit API. Calendar.app scripting is retained only as a
 legacy final fallback. A failed or suspiciously empty refresh never replaces a
 previously healthy index.
+
+The authorization command installs a small signed helper app under
+`$HOME/Applications`. Its stable macOS privacy identity lets the EventKit
+fallback work consistently from terminals, MCP hosts, and scheduled launchd
+jobs. Calendar inputs are passed as process arguments rather than interpolated
+into executable scripts.
 
 Run the MCP server with watch mode to keep the index current while events
 change in Calendar.app:
@@ -142,6 +148,7 @@ All read tools are also available as standalone CLI commands:
 
 ```bash
 mac-calendar-mcp calendars
+mac-calendar-mcp authorize
 mac-calendar-mcp init
 mac-calendar-mcp index
 mac-calendar-mcp status

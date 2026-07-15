@@ -23,6 +23,7 @@ packages/mac-calendar-mcp/src/apple_calendar_mcp/
 ├── cli.py              # CLI commands (index, status, rebuild, serve)
 ├── server.py           # FastMCP server with 6 read-only MCP tools
 ├── config.py           # Environment variable and TOML configuration
+├── eventkit_helper.py  # Stable app identity for scheduled EventKit access
 ├── builders.py         # Calendar query and script builders
 ├── executor.py         # run_jxa(), execute_with_core()
 ├── recurrence.py       # Built-in recurrence expansion for common RRULEs
@@ -90,13 +91,20 @@ and calendar name by default. Notes are indexed and returned by default.
 Calendar rebuilds use three read-only sources in order:
 
 1. Calendar's local SQLite store when the process can read it.
-2. Apple's supported EventKit API through JXA-Objective-C.
+2. Apple's supported EventKit API through a compiled JXA helper.
 3. Calendar.app scripting as a legacy compatibility fallback.
 
 EventKit is the reliable fallback for scheduled and sandboxed contexts where
 the private store is protected. It returns expanded occurrences for the bounded
 index window and avoids the slow per-event Apple Events query. The private
 store remains a fast-path optimization, not a correctness requirement.
+
+Run `mac-calendar-mcp authorize` once from an interactive session. It compiles
+and signs a small helper app under `$HOME/Applications`, requests Full Calendar
+Access, and verifies that access. The stable app identity prevents launchd from
+receiving a different EventKit authorization state than an interactive shell.
+Rebuild inputs are passed as `osascript` arguments to the compiled script and
+are never interpolated into executable JavaScript.
 
 **Caveat:** Calendar.app scripting exposes a recurrence string, not a complete
 occurrence-expansion API. The Python recurrence layer must expand common
@@ -110,11 +118,12 @@ indexed as individual non-recurring events.
 2. **server.py** - 6 read-only MCP tools, uses builders and index
 3. **builders.py** - Constructs JXA scripts from Python, type-safe
 4. **executor.py** - Runs scripts via osascript, handles JSON parsing
-5. **index/eventkit.py** - Builds safe EventKit snapshot requests
-6. **recurrence.py** - Expands common recurrence rules into occurrences
-7. **index/** - FTS5 search index for archive search
-8. **jxa/calendar_core.js** - Legacy Calendar.app scripting utilities
-9. **jxa/eventkit_core.js** - Supported EventKit snapshot adapter
+5. **eventkit_helper.py** - Installs and executes the authorized helper app
+6. **index/eventkit.py** - Builds safe EventKit snapshot requests
+7. **recurrence.py** - Expands common recurrence rules into occurrences
+8. **index/** - FTS5 search index for archive search
+9. **jxa/calendar_core.js** - Legacy Calendar.app scripting utilities
+10. **jxa/eventkit_core.js** - Supported EventKit snapshot adapter
 
 ### Data Flow (JXA Path)
 
@@ -135,7 +144,9 @@ CLI/server startup → IndexManager.sync_updates()
                             ↓
             Calendar store available and non-empty?
                     ↙ yes             ↘ no/empty
-              SQLite snapshot      EventKit snapshot
+              SQLite snapshot      Authorized helper
+                                           ↓
+                                    EventKit snapshot
                                            ↓ failure
                               legacy Calendar.app JXA
                             ↓
@@ -381,6 +392,7 @@ CalendarCore.formatDate(date)  // ISO string or null
 mac-calendar-mcp              # Run MCP server (default)
 mac-calendar-mcp serve        # Run MCP server explicitly
 mac-calendar-mcp serve --watch # Run with periodic index updates
+mac-calendar-mcp authorize    # Install helper and request Calendar access
 mac-calendar-mcp index        # Build search index from Calendar.app
 mac-calendar-mcp status       # Show index statistics
 mac-calendar-mcp rebuild      # Force rebuild index
@@ -462,8 +474,8 @@ added to this repo.
 ## Known Limitations
 
 1. **macOS Only** - Requires Apple Calendar and `osascript`.
-2. **Calendar Permission** - macOS grants Calendar read access through the
-   system privacy prompt; the OS permission is not a read-only-only grant.
+2. **Calendar Permission** - Run `mac-calendar-mcp authorize` interactively and
+   approve Full Calendar Access before EventKit-backed scheduled rebuilds.
 3. **macOS-Only Backend** - v1 reads through the Calendar store, EventKit,
    or legacy Calendar.app JXA; it does not use PyObjC.
 4. **Recurrence Coverage** - Common recurrence rules are expanded; complex
@@ -479,6 +491,7 @@ added to this repo.
 |--------|------------|----------|
 | **SQL Injection** | Parameterized queries with `?` placeholders | search.py, sync.py |
 | **JXA Injection** | `json.dumps()` serialization for all strings | builders.py, sync.py |
+| **Helper Argument Injection** | Snapshot values passed as subprocess arguments, never executable source | eventkit_helper.py |
 | **FTS5 Query Injection** | Special character escaping via parser helpers | search.py |
 | **Data Exposure** | Index database created with 0o600 permissions | schema.py |
 | **Runaway Recurrence** | Per-series occurrence cap and future window | recurrence.py |
